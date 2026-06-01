@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brian's Daily Log</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f2ede4;--ink:#111;--muted:#88887a;--rule:#ccc8bf;--serif:'EB Garamond',Georgia,serif;--mono:'Space Mono',monospace}
+html{font-size:17px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.7;overflow-x:hidden}
+.wrap{max-width:800px;margin:0 auto;padding:0 3rem}
+
+/* PROGRESS BAR */
+.progress-bar{position:fixed;top:0;left:0;height:1px;background:var(--ink);width:0%;transition:width .4s ease;z-index:100}
+
+/* MASTHEAD */
+.masthead{padding:5rem 0 4rem;border-bottom:1px solid var(--ink)}
+.mast-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3rem}
+.mast-eyebrow{font-family:var(--mono);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
+.mast-title{font-family:var(--serif);font-size:clamp(4rem,10vw,8rem);font-weight:400;letter-spacing:-.03em;line-height:.9;font-style:italic}
+.mast-right{text-align:right}
+.mast-date{font-family:var(--serif);font-size:1.05rem;color:var(--muted);font-style:italic}
+.mast-time{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.1em;margin-top:.3rem}
+
+/* DAILY QUOTE */
+.daily-quote{font-family:var(--serif);font-size:1.1rem;font-style:italic;color:var(--muted);margin-bottom:2.5rem;line-height:1.5;min-height:1.7rem;transition:opacity .5s ease}
+.daily-quote.fade{opacity:0}
+
+/* RINGS */
+.rings-row{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding-top:2.5rem;border-top:1px solid var(--rule)}
+.ring-item{display:flex;flex-direction:column;align-items:center;gap:1rem;flex:1;position:relative}
+.ring-item-label{font-family:var(--mono);font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);text-align:center;line-height:1.4}
+.ring-tooltip{position:absolute;bottom:-1.8rem;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.42rem;color:var(--muted);letter-spacing:.08em;white-space:nowrap;opacity:0;transition:opacity .25s ease;pointer-events:none}
+.ring-item:hover .ring-tooltip{opacity:1}
+
+/* STREAK + ALL CLOSED */
+.mast-footer{display:flex;justify-content:space-between;align-items:center;margin-top:2rem;min-height:1.5rem}
+.streak-display{font-family:var(--mono);font-size:.55rem;color:var(--muted);letter-spacing:.1em}
+.streak-display span{color:var(--ink)}
+.all-closed-msg{font-family:var(--serif);font-size:1rem;font-style:italic;color:var(--muted);opacity:0;transition:opacity .8s ease}
+.all-closed-msg.show{opacity:1}
+
+/* CALENDAR */
+.cal-toggle{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;transition:color .2s;display:block;margin-top:1.8rem}
+.cal-toggle:hover{color:var(--ink)}
+.cal-panel{display:none;margin-top:2rem;border-top:1px solid var(--rule);padding-top:2rem}
+.cal-panel.open{display:block}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.cal-month{font-family:var(--serif);font-size:1.3rem;font-style:italic}
+.cal-nav{display:flex;gap:.5rem}
+.cal-nav button{font-family:var(--mono);font-size:.6rem;background:none;border:1px solid var(--rule);color:var(--muted);padding:.3rem .6rem;cursor:pointer;transition:border-color .2s,color .2s}
+.cal-nav button:hover{border-color:var(--ink);color:var(--ink)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day-hd{font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:.5rem}
+.cal-day{min-height:52px;border:1px solid var(--rule);padding:4px;display:flex;flex-direction:column;gap:2px;align-items:center;transition:border-color .2s}
+.cal-day.today{border-color:var(--ink)}
+.cal-day.empty{border:none}
+.cal-day.streak-day{background:rgba(17,17,17,.03)}
+.cal-day-num{font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-bottom:2px}
+.cal-day.today .cal-day-num{color:var(--ink)}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;max-width:36px}
+.cal-dot{width:6px;height:6px;border-radius:50%;transition:transform .2s}
+.cal-day:hover .cal-dot{transform:scale(1.3)}
+.cal-legend{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--rule)}
+.cal-leg-item{display:flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.48rem;color:var(--muted)}
+.cal-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* SPARKLINE */
+.sparkline-row{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--rule)}
+.spark-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;flex:1}
+.spark-label{font-family:var(--mono);font-size:.42rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center}
+
+/* CHAPTERS */
+.chapter{border-bottom:1px solid var(--rule)}
+.ch-trigger{width:100%;background:none;border:none;cursor:pointer;padding:4rem 0 3.5rem;text-align:left;color:var(--ink);display:block;position:relative}
+.ch-num{font-family:var(--mono);font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:block}
+.ch-title{font-family:var(--serif);font-size:clamp(2rem,4.5vw,3.6rem);font-weight:400;font-style:italic;letter-spacing:-.02em;line-height:1;display:block;position:relative;display:inline-block}
+.ch-title::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--ink);transition:width .4s ease}
+.ch-trigger:hover .ch-title::after{width:100%}
+.ch-sub{font-family:var(--mono);font-size:.55rem;color:var(--muted);letter-spacing:.08em;display:block;overflow:hidden;max-height:0;opacity:0;transition:max-height .4s,opacity .4s,margin .4s}
+.ch-trigger:hover .ch-sub,.ch-trigger[aria-expanded="true"] .ch-sub{max-height:2rem;opacity:1;margin-top:.9rem}
+.ch-arrow{position:absolute;right:0;top:4rem;font-family:var(--mono);font-size:.7rem;color:var(--muted);transition:transform .4s,color .3s}
+.ch-trigger:hover .ch-arrow{color:var(--ink)}
+.ch-trigger[aria-expanded="true"] .ch-arrow{transform:rotate(45deg);color:var(--ink)}
+.ch-body{overflow:hidden;max-height:0;transition:max-height .65s cubic-bezier(.4,0,.2,1)}
+.ch-body.open{max-height:20000px}
+.ch-body-inner{padding-bottom:5rem}
+
+/* TASKS */
+.tblock{margin-bottom:4rem;transition:opacity .4s ease}
+.tblock.complete{opacity:.5}
+.tblock:last-child{margin-bottom:0}
+.tblock-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding-bottom:1.2rem;border-bottom:1px solid var(--rule)}
+.ex-group{border-bottom:1px solid var(--rule);padding:.8rem 0}
+.ex-group-label{font-family:var(--mono);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding:.8rem 0 .6rem;display:block}
+.ex-option{display:flex;align-items:flex-start;gap:1.2rem;padding:.9rem 0;border-top:1px solid var(--rule);cursor:pointer;transition:opacity .2s}
+.ex-option:hover{opacity:.6}
+.ex-radio{width:11px;height:11px;border:1px solid var(--ink);flex-shrink:0;margin-top:6px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.ex-radio.on::after{content:'';width:5px;height:5px;background:var(--ink);border-radius:50%;display:block}
+.ex-content{flex:1}
+.ex-label{font-family:var(--serif);font-size:1.05rem;line-height:1.4}
+.ex-label.done{text-decoration:line-through;color:var(--muted)}
+.ex-sub{font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-top:.2rem}
+.ex-xp{font-family:var(--mono);font-size:.52rem;color:var(--muted);flex-shrink:0;padding-top:6px}
+.task-row{display:flex;align-items:flex-start;gap:1.2rem;padding:1.4rem 0;border-bottom:1px solid var(--rule);cursor:pointer;transition:opacity .2s;position:relative;overflow:hidden}
+.task-row:hover{opacity:.6}
+.task-row .ripple{position:absolute;border-radius:50%;background:rgba(17,17,17,.08);width:0;height:0;top:50%;left:11px;transform:translate(-50%,-50%);animation:ripple .5s ease-out forwards;pointer-events:none}
+@keyframes ripple{to{width:60px;height:60px;opacity:0}}
+.task-box{width:11px;height:11px;border:1px solid var(--ink);flex-shrink:0;margin-top:6px;display:flex;align-items:center;justify-content:center;font-size:8px;transition:background .15s}
+.task-box.done{background:var(--ink);color:var(--bg)}
+.task-content{flex:1}
+.task-label{font-family:var(--serif);font-size:1.05rem;line-height:1.4}
+.task-label.done{text-decoration:line-through;color:var(--muted)}
+.task-right{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0}
+.task-xp{font-family:var(--mono);font-size:.52rem;color:var(--muted)}
+.expand-btn{font-family:var(--mono);font-size:.48rem;color:var(--muted);cursor:pointer;white-space:nowrap;background:none;border:none;padding:0}
+.inline-log{display:flex;align-items:center;gap:.6rem;margin-top:.4rem}
+.inline-log label{font-family:var(--mono);font-size:.5rem;color:var(--muted);white-space:nowrap}
+.inline-input{background:transparent;border:none;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:.62rem;color:var(--ink);width:90px;outline:none;padding:.1rem .2rem;text-align:center}
+.inline-input:focus{border-bottom-color:var(--ink)}
+.subtask-list{padding:.4rem 0 0 1.8rem}
+.subtask-item{display:flex;align-items:center;gap:.8rem;padding:.6rem 0;border-bottom:1px solid var(--rule);cursor:pointer;opacity:.8}
+.subtask-item:hover{opacity:.5}
+.subtask-item:last-child{border-bottom:none}
+.sub-box{width:9px;height:9px;border:1px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:7px}
+.sub-box.done{background:var(--muted);color:var(--bg)}
+.sub-label{font-family:var(--serif);font-size:.95rem;color:var(--muted)}
+.sub-label.done{text-decoration:line-through}
+.journal-inline{background:transparent;border:1px solid var(--rule);padding:1.5rem;margin-top:.5rem}
+.ji-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;display:block}
+.ji-theme{font-family:var(--serif);font-size:.95rem;font-style:italic;color:var(--muted);margin-bottom:1rem;padding:.6rem 0;border-bottom:1px solid var(--rule)}
+.ji-prompt{font-family:var(--serif);font-size:1rem;font-style:italic;color:var(--ink);margin-bottom:.8rem;line-height:1.5}
+.ji-ta{width:100%;background:transparent;border:none;border-bottom:1px solid var(--rule);font-family:var(--serif);font-size:1rem;color:var(--ink);padding:.3rem 0 .5rem;outline:none;resize:vertical;min-height:80px;line-height:1.7}
+.ji-ta:focus{border-bottom-color:var(--ink)}
+.depth-wrap{margin:.8rem 0}
+.depth-wrap label{font-family:var(--mono);font-size:.5rem;color:var(--muted)}
+.depth-wrap input[type=range]{-webkit-appearance:none;width:100%;height:1px;background:var(--rule);outline:none;margin:.4rem 0}
+.depth-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;background:var(--ink);cursor:pointer}
+.depth-ends{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.48rem;color:var(--muted)}
+.ji-btn{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--bg);border:none;padding:.5rem 1rem;cursor:pointer;margin-top:.8rem;transition:opacity .2s}
+.ji-btn:hover{opacity:.7}
+.ji-btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+.btn-row-sm{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem}
+.erp-panel{border:1px solid var(--rule);padding:1.5rem;margin-top:.5rem}
+.erp-step{padding:.7rem 0;border-bottom:1px solid var(--rule);font-family:var(--serif);font-size:.95rem;color:var(--muted)}
+.erp-step:last-child{border-bottom:none}
+.erp-step b{color:var(--ink);font-weight:400}
+.cm-menu{display:flex;flex-direction:column;gap:.4rem}
+.cm-menu-item{display:flex;justify-content:space-between;align-items:center;gap:1rem;width:100%;text-align:left;padding:.8rem 1rem;border:1px solid var(--rule);background:transparent;cursor:pointer;font-family:var(--serif);font-size:.95rem;color:var(--ink);transition:border-color .15s,background .15s}
+.cm-menu-item:hover{border-color:var(--ink);background:rgba(0,0,0,.02)}
+.cm-progress{height:3px;background:var(--rule);border-radius:2px;overflow:hidden}
+.cm-progress-bar{height:100%;background:var(--ink);transition:width .2s}
+.jd-mantra{margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--rule)}
+.jd-mantra-label{display:block;font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.jd-mantra-text{font-family:var(--serif);font-style:italic;font-size:.95rem;color:var(--ink);line-height:1.5}
+.jd-section-hd{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin:.8rem 0 1rem;display:flex;justify-content:space-between;align-items:baseline}
+.jd-section-count{font-size:.5rem;color:var(--muted)}
+.jd-field{margin-bottom:1.1rem}
+.jd-prompt{font-family:var(--serif);font-size:1rem;color:var(--ink);line-height:1.5;margin-bottom:.4rem}
+.blue-mood-row{display:flex;flex-wrap:wrap;gap:.6rem;margin:.8rem 0 1.4rem}
+.mood-option{display:flex;align-items:center;gap:.4rem;cursor:pointer;opacity:.7;transition:opacity .2s}
+.mood-option:hover,.mood-option.on{opacity:1}
+.mood-dot{width:10px;height:10px;border:1px solid var(--ink);border-radius:50%;flex-shrink:0;transition:background .15s}
+.mood-dot.on{background:var(--ink)}
+.mood-option span{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase}
+.blue-field{margin-bottom:1.2rem}
+.field-lbl{font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.5rem}
+.gym-tabs{display:flex;border-bottom:1px solid var(--rule);margin-bottom:3rem;overflow-x:auto}
+.gtab{font-family:var(--mono);font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:.7rem 1rem .7rem 0;cursor:pointer;margin-bottom:-1px;white-space:nowrap;transition:color .2s,border-color .2s}
+.gtab.on{color:var(--ink);border-bottom-color:var(--ink)}
+.gpanel{display:none}.gpanel.on{display:block}
+.gym-day-title{font-family:var(--serif);font-size:1.5rem;font-style:italic;color:var(--muted);margin-bottom:.3rem}
+.gym-day-goal{font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.1em;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+.gym-section-hd{font-family:var(--mono);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:1.8rem 0 .6rem;padding-bottom:.4rem;border-bottom:1px solid var(--rule)}
+.gym-row{display:flex;justify-content:space-between;align-items:baseline;padding:.8rem 0;border-bottom:1px solid var(--rule)}
+.gym-row:last-child{border-bottom:none}
+.gym-ex{font-family:var(--serif);font-size:1rem}
+.gym-det{font-family:var(--mono);font-size:.55rem;color:var(--muted)}
+.habit-row{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 0;border-bottom:1px solid var(--rule)}
+.habit-row:last-child{border-bottom:none}
+.habit-name{font-family:var(--serif);font-size:1.05rem}
+.habit-right{display:flex;align-items:center;gap:1rem}
+.dot-strip{display:flex;gap:6px}
+.dot{width:7px;height:7px;border:1px solid var(--rule);transition:background .15s,border-color .15s}
+.dot.on{background:var(--ink);border-color:var(--ink)}
+.dot.today{border-color:var(--ink)}
+.streak-num{font-family:var(--mono);font-size:.52rem;color:var(--muted);min-width:2rem;text-align:right}
+.j-entry-block{margin-bottom:3.5rem}
+.j-entry-hd{font-family:var(--mono);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule);margin-bottom:1.2rem}
+.j-entry-text{font-family:var(--serif);font-size:1.05rem;line-height:1.8;white-space:pre-wrap}
+.j-entry-empty{font-family:var(--serif);font-size:1.05rem;color:var(--muted);font-style:italic}
+.j-depth-tag{font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-top:.6rem}
+.strava-btn{display:inline-flex;align-items:center;gap:.6rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;background:#fc4c02;color:#fff;border:none;padding:.6rem 1.3rem;cursor:pointer;transition:opacity .2s}
+.strava-btn:hover{opacity:.85}
+.strava-data-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;border:1px solid var(--rule);padding:1.5rem}
+.strava-stat-label{font-family:var(--mono);font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem}
+.strava-stat-val{font-family:var(--serif);font-size:1.8rem;font-weight:400;line-height:1}
+.strava-activity-name{font-family:var(--serif);font-size:1rem;font-style:italic;color:var(--muted);margin-bottom:1.2rem}
+.perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem}
+.perf-card{border:1px solid var(--rule);padding:1.5rem}
+.perf-card-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.perf-input-val{background:transparent;border:none;border-bottom:1px solid var(--rule);font-family:var(--serif);font-size:1.8rem;color:var(--ink);width:100%;outline:none;padding:.1rem 0;line-height:1;margin-bottom:.3rem}
+.cs-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+.cs-sub{font-family:var(--serif);font-size:.95rem;color:var(--muted);font-style:italic}
+.badge-wrap{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem}
+.badge{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);padding:.3rem .7rem;color:var(--muted)}
+.badge.on{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.xp-entry{display:flex;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:.55rem;color:var(--muted)}
+.xp-entry b{color:var(--ink);font-weight:400}
+.data-area{font-family:var(--mono);font-size:.58rem;width:100%;min-height:80px;background:transparent;border:1px solid var(--rule);color:var(--ink);padding:.8rem;outline:none;resize:vertical;line-height:1.6;margin-top:.8rem}
+.sec-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:2.5rem 0 1rem;display:block}
+.btn-solid{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--bg);border:1px solid var(--ink);padding:.6rem 1.3rem;cursor:pointer;transition:opacity .2s}
+.btn-solid:hover{opacity:.7}
+.btn-line{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--ink);color:var(--ink);padding:.6rem 1.3rem;cursor:pointer;transition:background .2s,color .2s}
+.btn-line:hover{background:var(--ink);color:var(--bg)}
+.btn-row{display:flex;gap:.8rem;margin-top:1.5rem;flex-wrap:wrap}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;padding:.6rem 1.2rem;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999}
+.toast.show{opacity:1}
+.footer{padding:6rem 0 4rem;border-top:1px solid var(--rule);display:flex;justify-content:space-between;align-items:flex-end}
+.footer-l{font-family:var(--serif);font-size:.95rem;font-style:italic;color:var(--muted);transition:opacity .5s}
+.footer-r{font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.1em}
+@media(max-width:640px){.wrap{padding:0 1.5rem}.perf-grid{grid-template-columns:1fr}}
+
+/* ══ GATE OVERLAY ══ */
+.gate-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;padding:4rem 1.5rem 6rem}
+.gate-wrap{width:100%;max-width:600px}
+.gate-eyebrow{font-family:var(--mono);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
+.gate-title{font-family:var(--serif);font-size:clamp(3rem,8vw,5.5rem);font-weight:400;font-style:italic;letter-spacing:-.03em;line-height:.95;margin-bottom:1rem}
+.gate-sub{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.08em;margin-bottom:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid var(--rule)}
+.gate-progress{display:flex;gap:.5rem;margin-bottom:3rem}
+.gate-pip{width:24px;height:1px;background:var(--rule);transition:background .4s}
+.gate-pip.on{background:var(--ink)}
+.gate-section{margin-bottom:3rem;padding-bottom:3rem;border-bottom:1px solid var(--rule)}
+.gate-section-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:1.5rem}
+.gate-unlock{display:block;width:100%;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;background:var(--ink);color:var(--bg);border:none;padding:1rem 2rem;cursor:pointer;margin-top:1rem;transition:opacity .2s;opacity:.4;pointer-events:none}
+.gate-unlock.ready{opacity:1;pointer-events:auto}
+.gate-unlock.ready:hover{opacity:.75}
+.gate-skip{display:block;width:100%;font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;color:var(--muted);background:none;border:none;cursor:pointer;margin-top:1rem;text-align:center;padding:.5rem;transition:color .2s}
+.gate-skip:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="gate-overlay" id="gate-overlay">
+  <div class="gate-wrap">
+    <div class="gate-eyebrow">Good morning, Brian</div>
+    <h1 class="gate-title">Before the day<br>begins.</h1>
+    <div class="gate-sub" id="gate-date-sub">—</div>
+    <div class="gate-progress">
+      <div class="gate-pip" id="gpip-0"></div>
+      <div class="gate-pip" id="gpip-1"></div>
+      <div class="gate-pip" id="gpip-2"></div>
+    </div>
+
+    <!-- SLEEP LOG -->
+    <div class="gate-section">
+      <span class="gate-section-label">Sleep Log — last night</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.2rem">
+        <div><label class="field-lbl">Bedtime</label><input class="ji-ta" style="min-height:unset" id="g-bed" placeholder="e.g. 10:30pm"></div>
+        <div><label class="field-lbl">Wake time</label><input class="ji-ta" style="min-height:unset" id="g-wake" placeholder="e.g. 6:15am"></div>
+      </div>
+      <div style="margin-bottom:1.2rem">
+        <label class="field-lbl">Sleep quality — <span id="g-sq-val">5</span>/10</label>
+        <input type="range" min="1" max="10" value="5" style="-webkit-appearance:none;width:100%;height:1px;background:var(--rule);outline:none;margin:.4rem 0" oninput="document.getElementById('g-sq-val').textContent=this.value;gateCheck()">
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:.48rem;color:var(--muted)"><span>Poor</span><span>Great</span></div>
+      </div>
+      <div>
+        <label class="field-lbl">HRV (if available)</label>
+        <input class="ji-ta" style="min-height:unset" id="g-hrv" placeholder="e.g. 52ms">
+      </div>
+    </div>
+
+    <!-- BLUE JOURNAL -->
+    <div class="gate-section">
+      <span class="gate-section-label">Blue Journal — Morning</span>
+      <div class="blue-mood-row" id="g-mood-row"></div>
+      <div class="blue-field"><label class="field-lbl">1 · How did I sleep, and how's my body feeling right now?</label>
+        <textarea class="ji-ta" id="g-q1" rows="3" placeholder="…" oninput="gateCheck()"></textarea></div>
+      <div class="blue-field"><label class="field-lbl">2 · Three things I'm grateful for</label>
+        <textarea class="ji-ta" id="g-q2" rows="3" placeholder="…" oninput="gateCheck()"></textarea></div>
+      <div class="blue-field"><label class="field-lbl">3 · My one main focus for today</label>
+        <textarea class="ji-ta" id="g-q3" rows="2" placeholder="…" oninput="gateCheck()"></textarea></div>
+      <div class="blue-field"><label class="field-lbl">4 · What would make today a good day?</label>
+        <textarea class="ji-ta" id="g-q4" rows="3" placeholder="…" oninput="gateCheck()"></textarea></div>
+      <div class="blue-field"><label class="field-lbl">5 · One affirmation — who am I becoming?</label>
+        <textarea class="ji-ta" id="g-q5" rows="2" placeholder="…" oninput="gateCheck()"></textarea></div>
+    </div>
+
+    <!-- IN DEPTH JOURNAL -->
+    <div class="gate-section">
+      <span class="gate-section-label">In Depth Journal — Morning</span>
+      <div class="ji-theme" id="g-theme-label" style="margin-bottom:.6rem;padding:.6rem 0;border-bottom:1px solid var(--rule)">—</div>
+      <div id="g-sections" style="font-family:var(--serif);font-size:.8rem;color:var(--muted);margin-bottom:.6rem;line-height:1.7"></div>
+      <div class="ji-prompt" id="g-prompt" style="margin-bottom:.6rem;line-height:1.7;font-style:italic;font-family:var(--serif);font-size:.82rem;color:var(--muted)">—</div>
+      <textarea class="ji-ta" id="g-indepth" rows="6" placeholder="A quick morning pass — you can work the full section on the dashboard." oninput="gateCheck()" style="min-height:140px"></textarea>
+    </div>
+
+    <button class="gate-unlock" id="gate-unlock-btn" onclick="unlockDashboard()">Open Today's Dashboard →</button>
+    <button class="gate-skip" onclick="skipGate()">Skip for now — I'll complete these later</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-top-row">
+      <div>
+        <div class="mast-eyebrow">Personal Daily Log — Adelaide, SA</div>
+        <h1 class="mast-title">Brian's Daily Log</h1>
+      </div>
+      <div class="mast-right">
+        <div class="mast-date" id="mast-date">—</div>
+        <div class="mast-time" id="mast-time">—</div>
+      </div>
+    </div>
+    <div class="daily-quote" id="daily-quote"></div>
+    <div class="rings-row" id="rings-wrap"></div>
+    <div class="mast-footer">
+      <div class="streak-display">Streak — <span id="streak-num">0</span> days</div>
+      <div class="all-closed-msg" id="all-closed-msg">All rings closed. Good day.</div>
+    </div>
+    <button class="cal-toggle" onclick="toggleCal()">View calendar ↓</button>
+    <div class="cal-panel" id="cal-panel">
+      <div class="cal-header">
+        <div class="cal-month" id="cal-month">—</div>
+        <div class="cal-nav">
+          <button onclick="calNav(-1)">←</button>
+          <button onclick="calNav(1)">→</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="sparkline-row" id="sparkline-row"></div>
+      <div class="cal-legend" id="cal-legend"></div>
+    </div>
+  </div>
+</header>
+
+<div class="chapter"><div class="wrap">
+  <button class="ch-trigger" aria-expanded="false" onclick="tog(this)">
+    <span class="ch-num">01 — Tasks</span><span class="ch-title">Daily Tasks</span>
+    <span class="ch-sub" id="tasks-sub">Tap to expand</span><span class="ch-arrow">+</span>
+  </button>
+  <div class="ch-body"><div class="ch-body-inner" id="tasks-root"></div></div>
+</div></div>
+
+<div class="chapter"><div class="wrap">
+  <button class="ch-trigger" aria-expanded="false" onclick="tog(this)">
+    <span class="ch-num">02 — Wellness</span><span class="ch-title">Habits &amp; Wellness</span>
+    <span class="ch-sub">Auto-populated from daily tasks</span><span class="ch-arrow">+</span>
+  </button>
+  <div class="ch-body"><div class="ch-body-inner" id="wellness-root"></div></div>
+</div></div>
+
+<div class="chapter"><div class="wrap">
+  <button class="ch-trigger" aria-expanded="false" onclick="tog(this)">
+    <span class="ch-num">03 — Movement</span><span class="ch-title">Gym Programme</span>
+    <span class="ch-sub">7-day programme — today highlighted</span><span class="ch-arrow">+</span>
+  </button>
+  <div class="ch-body"><div class="ch-body-inner">
+    <div class="gym-tabs" id="gym-tabs"></div>
+    <div id="gym-panels"></div>
+  </div></div>
+</div></div>
+
+<div class="chapter"><div class="wrap">
+  <button class="ch-trigger" aria-expanded="false" onclick="tog(this)">
+    <span class="ch-num">04 — Reflection</span><span class="ch-title">Journal</span>
+    <span class="ch-sub">Morning · Afternoon · Evening entries</span><span class="ch-arrow">+</span>
+  </button>
+  <div class="ch-body"><div class="ch-body-inner" id="journal-root"></div></div>
+</div></div>
+
+<div class="chapter"><div class="wrap">
+  <button class="ch-trigger" aria-expanded="false" onclick="tog(this)">
+    <span class="ch-num">05 — Performance</span><span class="ch-title">Performance</span>
+    <span class="ch-sub">Strava · Garmin · Manual entry</span><span class="ch-arrow">+</span>
+  </button>
+  <div class="ch-body"><div class="ch-body-inner">
+    <div id="strava-section"></div>
+    <div style="margin-top:2rem;border-top:1px solid var(--rule);padding-top:2rem">
+      <div class="cs-label" style="margin-bottom:.3rem">Garmin</div>
+      <div class="cs-sub" style="margin-bottom:1rem">Syncs automatically via Strava — connect above</div>
+    </div>
+    <div style="margin-top:2rem;border-top:1px solid var(--rule);padding-top:2rem">
+      <div class="cs-label" style="margin-bottom:.8rem">Manual Entry</div>
+      <div class="perf-grid" id="perf-grid"></div>
+      <button class="btn-solid" onclick="savePerf()">Save Manual Data</button>
+    </div>
+  </div></div>
+</div></div>
+
+<div class="chapter"><div class="wrap">
+  <button class="ch-trigger" aria-expanded="false" onclick="tog(this)">
+    <span class="ch-num">06 — Data</span><span class="ch-title">Backup &amp; Restore</span>
+    <span class="ch-sub">Export · Import · Reset</span><span class="ch-arrow">+</span>
+  </button>
+  <div class="ch-body"><div class="ch-body-inner">
+    <span class="sec-label" style="margin-top:0">Data</span>
+    <div class="btn-row" style="margin-top:0;margin-bottom:1rem">
+      <button class="btn-solid" onclick="exportData()">Export JSON</button>
+      <button class="btn-line" onclick="toggleImport()">Import JSON</button>
+      <button class="btn-line" onclick="if(confirm('Reset all data?')){localStorage.clear();location.reload()}">Reset</button>
+    </div>
+    <div id="import-wrap" style="display:none">
+      <textarea class="data-area" id="import-ta" placeholder="Paste exported JSON here…"></textarea>
+      <div class="btn-row"><button class="btn-solid" onclick="importData()">Import &amp; Restore</button></div>
+    </div>
+    <textarea class="data-area" id="export-ta" style="display:none" readonly></textarea>
+  </div></div>
+</div></div>
+
+<div style="text-align:center;padding:3rem 0 0;border-top:1px solid var(--rule)">
+  <button onclick="openFullscreen()" style="font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;background:none;border:1px solid var(--ink);color:var(--ink);padding:.7rem 1.6rem;cursor:pointer" onmouseover="this.style.background='#111';this.style.color='#f2ede4'" onmouseout="this.style.background='none';this.style.color='#111'">Open Full Screen ↗</button>
+</div>
+
+<footer class="footer">
+  <div class="wrap" style="width:100%;display:flex;justify-content:space-between;align-items:flex-end">
+    <div class="footer-l" id="footer-msg">Present. Consistent. Compounding.</div>
+    <div class="footer-r">Brian's Daily Log · Adelaide SA</div>
+  </div>
+</footer>
+<div class="toast" id="toast">Saved</div>
+
+<script>
+/* ══ QUOTES ══ */
+const DAILY_QUOTES=[
+  'The day is yours. Start simply.',
+  'One thing at a time. One day at a time.',
+  'Small actions, compounding quietly.',
+  'What you do today is who you become.',
+  'Presence is the practice.',
+  'Progress lives in the ordinary moments.',
+  'Show up. The rest follows.',
+  'Consistency is the quiet superpower.',
+  'The man you\'re becoming is built right here.',
+  'Florence is watching. So is the future you.',
+  'Do the thing. Feel the thing. Write the thing.',
+  'Rest is part of the work.',
+];
+
+/* ══ FOOTER MESSAGES ══ */
+const FOOTER_MSGS={
+  0:'The day is yours. Nothing done yet — and that\'s fine.',
+  25:'A quarter there. Keep going.',
+  50:'Half there. The second half is where it counts.',
+  75:'Nearly done. Finish strong.',
+  100:'Present. Consistent. Compounding.',
+};
+
+/* ══ RINGS ══ */
+const RINGS=[
+  {id:'r-exercise',  label:'Exercise',     tooltip:'train every day',         color:'#E24B4A', taskIds:['gym-session']},
+  {id:'r-mental',    label:'Mental Health', tooltip:'journals · ERP · reframe', color:'#D4537E', taskIds:['j-am','jd-am','j-evening','jd-pm','erp','brain-dump']},
+  {id:'r-mindful',   label:'Mindfulness',   tooltip:'breath · meditate · read', color:'#378ADD', taskIds:['meditate-am','meditate-pm','breath-night','read']},
+  {id:'r-recovery',  label:'Recovery',      tooltip:'kegels + stretching',    color:'#639922', taskIds:['kegels-am','kegels-pm','mobility','specialist-stretch']},
+  {id:'r-jobs',      label:'Jobs',          tooltip:'the life stuff',          color:'#BA7517', taskIds:['house-chores','dinner','afterdinner-chores','prep-tomorrow']},
+  {id:'r-florence',  label:'Florence',      tooltip:'your favourite part',     color:'#7F77DD', taskIds:['florence']},
+  {id:'r-sleep',     label:'Sleep',         tooltip:'log your sleep',          color:'#5BA4A4', taskIds:['sleep-log']},
+  {id:'r-nutrition', label:'Nutrition',     tooltip:'calories · water · alcohol free', color:'#8B6BAE', taskIds:['nutrition-calories','nutrition-water','nutrition-alcohol']},
+  {id:'r-hygiene',   label:'Hygiene',       tooltip:'teeth · skin · shower',   color:'#C4956A', taskIds:['hygiene-teeth-am','hygiene-teeth-pm','hygiene-shave','hygiene-skin','hygiene-skin-am','morning-shower','postgym-shower']},
+];
+
+const RING_SIZE=72, RING_STROKE=1.5;
+const RING_R=RING_SIZE/2-RING_STROKE*2;
+const RING_CIRC=2*Math.PI*RING_R;
+
+function ringPct(ring){const done=ring.taskIds.filter(id=>S.tasks[id]).length;return ring.taskIds.length?done/ring.taskIds.length:0;}
+function ringClosed(ring){return ringPct(ring)>=1;}
+function allRingsClosed(){return RINGS.every(r=>ringClosed(r));}
+
+function renderRings(){
+  const wrap=document.getElementById('rings-wrap');if(!wrap)return;
+  wrap.innerHTML='';
+  RINGS.forEach(ring=>{
+    const pct=ringPct(ring);const closed=pct>=1;const dash=pct*RING_CIRC;
+    const cx=RING_SIZE/2,cy=RING_SIZE/2;
+    const item=document.createElement('div');item.className='ring-item';
+    item.innerHTML=`
+      <div class="ring-svg-wrap">
+        <svg width="${RING_SIZE}" height="${RING_SIZE}" viewBox="0 0 ${RING_SIZE} ${RING_SIZE}">
+          <circle cx="${cx}" cy="${cy}" r="${RING_R}" fill="none" stroke="${ring.color}" stroke-width="${RING_STROKE}" opacity="0.15"/>
+          ${closed
+            ?`<circle cx="${cx}" cy="${cy}" r="${RING_R}" fill="none" stroke="${ring.color}" stroke-width="${RING_STROKE}"/>`
+            :`<circle cx="${cx}" cy="${cy}" r="${RING_R}" fill="none" stroke="${ring.color}" stroke-width="${RING_STROKE}"
+                stroke-dasharray="${dash} ${RING_CIRC}" stroke-dashoffset="${RING_CIRC/4}"
+                stroke-linecap="round" style="transition:stroke-dasharray .6s ease"/>
+              ${pct>0?`<text x="${cx}" y="${cy+4}" text-anchor="middle" style="font-family:'Space Mono',monospace;font-size:9px;fill:${ring.color};opacity:.7">${Math.round(pct*100)}%</text>`:''}`}
+        </svg>
+      </div>
+      <span class="ring-item-label">${ring.label.replace(' ','<br>')}</span>
+      <span class="ring-tooltip">${ring.tooltip}</span>`;
+    wrap.appendChild(item);
+  });
+  // streak
+  const sn=document.getElementById('streak-num');if(sn)sn.textContent=S.streak||0;
+  // all closed message
+  const msg=document.getElementById('all-closed-msg');
+  if(msg){if(allRingsClosed())msg.classList.add('show');else msg.classList.remove('show');}
+  // footer
+  updateFooter();
+  saveRingsToHistory();
+}
+
+function updateFooter(){
+  const el=document.getElementById('footer-msg');if(!el)return;
+  const done=allDone(),total=allTotal(),pct=total?Math.round(done/total*100):0;
+  let msg=FOOTER_MSGS[0];
+  if(pct>=100)msg=FOOTER_MSGS[100];
+  else if(pct>=75)msg=FOOTER_MSGS[75];
+  else if(pct>=50)msg=FOOTER_MSGS[50];
+  else if(pct>=25)msg=FOOTER_MSGS[25];
+  el.textContent=msg;
+}
+
+/* ══ RING HISTORY ══ */
+function saveRingsToHistory(){
+  if(!S.ringHistory)S.ringHistory={};
+  S.ringHistory[td()]=RINGS.map(r=>({id:r.id,closed:ringClosed(r),pct:ringPct(r)}));
+  save();
+}
+
+/* ══ CALENDAR ══ */
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+function toggleCal(){
+  const p=document.getElementById('cal-panel');p.classList.toggle('open');
+  if(p.classList.contains('open'))renderCal();
+  document.querySelector('.cal-toggle').textContent=p.classList.contains('open')?'Hide calendar ↑':'View calendar ↓';
+}
+function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCal();}
+
+function renderCal(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month').textContent=`${months[calMonth]} ${calYear}`;
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>{
+    const hd=document.createElement('div');hd.className='cal-day-hd';hd.textContent=d;grid.appendChild(hd);
+  });
+  const first=new Date(calYear,calMonth,1);
+  const lastDay=new Date(calYear,calMonth+1,0).getDate();
+  let startDow=first.getDay()-1;if(startDow<0)startDow=6;
+  for(let i=0;i<startDow;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  // find streak days
+  const streakDays=getStreakDays();
+  for(let d=1;d<=lastDay;d++){
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=dateStr===td();
+    const histDay=S.ringHistory&&S.ringHistory[dateStr];
+    const isStreak=streakDays.has(dateStr);
+    const cell=document.createElement('div');
+    cell.className=`cal-day${isToday?' today':''}${isStreak?' streak-day':''}`;
+    const num=document.createElement('div');num.className='cal-day-num';num.textContent=d;cell.appendChild(num);
+    const dots=histDay||(isToday?RINGS.map(r=>({id:r.id,closed:ringClosed(r)})):null);
+    if(dots){
+      const dw=document.createElement('div');dw.className='cal-dots';
+      dots.forEach(r=>{
+        const ring=RINGS.find(x=>x.id===r.id);
+        const dot=document.createElement('div');dot.className='cal-dot';
+        dot.style.background=r.closed?(ring?ring.color:'#888'):'var(--rule)';
+        if(ring)dot.title=ring.label;
+        dw.appendChild(dot);
+      });
+      cell.appendChild(dw);
+    }
+    grid.appendChild(cell);
+  }
+  renderSparklines();
+  // legend
+  const legend=document.getElementById('cal-legend');legend.innerHTML='';
+  RINGS.forEach(r=>{
+    const item=document.createElement('div');item.className='cal-leg-item';
+    item.innerHTML=`<div class="cal-leg-dot" style="background:${r.color}"></div>${r.label}`;
+    legend.appendChild(item);
+  });
+}
+
+function getStreakDays(){
+  const days=new Set();
+  if(!S.ringHistory)return days;
+  const sorted=Object.keys(S.ringHistory).sort();
+  let streak=[];
+  sorted.forEach(d=>{
+    const hist=S.ringHistory[d];
+    const allClosed=hist&&hist.every(r=>r.closed);
+    if(allClosed)streak.push(d);
+    else{if(streak.length>=2)streak.forEach(s=>days.add(s));streak=[];}
+  });
+  if(streak.length>=2)streak.forEach(s=>days.add(s));
+  return days;
+}
+
+function renderSparklines(){
+  const row=document.getElementById('sparkline-row');if(!row)return;
+  row.innerHTML='';
+  // last 7 days per ring
+  const last7=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);last7.push(d.toISOString().slice(0,10));}
+  RINGS.forEach(ring=>{
+    const vals=last7.map(d=>{
+      if(d===td())return ringPct(ring);
+      const h=S.ringHistory&&S.ringHistory[d];
+      if(!h)return 0;
+      const r=h.find(x=>x.id===ring.id);
+      return r?r.pct:0;
+    });
+    const W=60,H=24,max=1;
+    const pts=vals.map((v,i)=>`${i*(W/(vals.length-1))},${H-(v/max)*H}`).join(' ');
+    const item=document.createElement('div');item.className='spark-item';
+    item.innerHTML=`
+      <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+        <polyline points="${pts}" fill="none" stroke="${ring.color}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+      </svg>
+      <span class="spark-label" style="color:${ring.color}">${ring.label.split(' ')[0]}</span>`;
+    row.appendChild(item);
+  });
+}
+
+/* ══ DATA ══ */
+const ANCHOR_THEMES={
+  0:{name:'Creativity & Performance',code:'D',desc:'Creativity · Curiosity · Work · Running · Lifting'},
+  1:{name:'Heart & Self',code:'B',desc:'Self-compassion · Inner child · Purpose · Spirituality · Sexual wellness'},
+  2:{name:'Joy & Abundance',code:'C',desc:'Gratitude · Loving-kindness · Mantras · Positive affect · Abundance'},
+  3:{name:'Relationships & Life Design',code:'E',desc:'Relationships · Values · Life-as-simulation · Identity direction'},
+  4:{name:'Heart & Self',code:'B',desc:'Self-compassion · Inner child · Purpose · Spirituality · Sexual wellness'},
+  5:{name:'Joy & Abundance',code:'C',desc:'Gratitude · Loving-kindness · Mantras · Positive affect · Abundance'},
+  6:{name:'Relationships & Life Design',code:'E',desc:'Relationships · Values · Life-as-simulation · Identity direction'},
+};
+const PROMPTS_B=[
+  {label:'B1 · Self-compassion / reparenting',prompts:[
+    'What happened in this failure or embarrassing moment?',
+    'What am I saying to myself about it right now?',
+    'If someone I loved went through this, what would I want them to know?',
+    'What strengths did I show, even if the outcome sucked?',
+    'What would a kind, wise version of me suggest as the next tiny step?',
+  ]},
+  {label:'B2 · Inner child',prompts:[
+    'Dear [age]-year-old me, here\'s what I remember you going through...',
+    'What did you need back then that you didn\'t get enough of?',
+    'What do you wish the adults had said or done?',
+    'Reply from younger me: Dear present-day me, this is how I feel; this is what I wish you\'d remember...',
+  ]},
+  {label:'B3 · Reparenting',prompts:[
+    'Today, my inner child got triggered when...',
+    'The critical voice said...',
+    'If I were a good parent to this younger part, I would say...',
+    'One small thing I can do today to show him I\'ve got his back is...',
+  ]},
+  {label:'B4 · Self-criticism awareness',prompts:[
+    'What did my inner critic say today (exact words)?',
+    'Whose voice does that sound like from my past?',
+    'Is that voice helping or hurting me now?',
+    'What new voice do I want to practice instead?',
+  ]},
+  {label:'B5 · Being more like me',prompts:[
+    'When I feel most like myself, what am I doing, how do I feel in my body, and how do I talk to myself?',
+    'In the last month, when did I handle something in a way that felt deeply "me"? What did I do or not do?',
+    'Under stress, what do I start doing that doesn\'t feel like me (tones, habits, avoidance)?',
+    'If "the real me" could send one sentence into my head during stress, what would it say?',
+    'What are three values that feel most core to me, and one tiny way I can live each of them today?',
+    'When I felt unconfident recently, what would "most-me" have done differently by 5%?',
+  ]},
+  {label:'B6 · Responsibility',prompts:[
+    'In which areas of my life do I already show strong responsibility, and what behaviours prove that?',
+    'Where do I feel least responsible right now (money, time, health, relationships, commitments)?',
+    'If someone described a "responsible version" of me in that area, what would they say I do consistently?',
+    'What is one commitment I can make to myself this week that is small but non-negotiable?',
+    'When I avoid responsibility, what am I usually trying to protect myself from (discomfort, failure, conflict)?',
+    'If I were 10% more responsible next month, what would look different in my day-to-day life?',
+  ]},
+  {label:'B7 · Spirituality',prompts:[
+    'When in my life have I felt most connected to something bigger than myself? What was happening?',
+    'What does "spiritual" actually mean to me, in my own words, not anyone else\'s definition?',
+    'What simple practices make me feel more grounded or connected, and how could I ritualise one this week?',
+    'If I lived as if my life were guided by a deeper intelligence or purpose, what one thing would I do differently today?',
+    'What values feel "sacred" to me, and how aligned was today with those values?',
+    'If I could ask life/the universe/God one honest question, what would it be, and what answer do I secretly hope to hear?',
+  ]},
+  {label:'B8 · Purpose of my existence',prompts:[
+    'If I stripped away achievement and status, what still makes my life feel worth living to me?',
+    'Looking back so far, what are 3-5 moments that felt intensely meaningful, and what do they have in common?',
+    'If my life had a working-title purpose statement for this season only, what might it be?',
+    'Whose lives are already better, even in tiny ways, because I exist? What did I do or bring to them?',
+    'If I knew my time was limited to the next 12 months, what would suddenly feel obviously important, and what would drop away?',
+    'What questions about existence have stayed with me since I was young, and how have my answers changed over time?',
+  ]},
+  {label:'B9 · Sexual wellness',prompts:[
+    'What am I critical of in my body or sexual self?',
+    'If a loved one felt this way, what would I want them to know?',
+    'What story do I tell myself about my sexual performance or desirability?',
+    'What is a kinder, more accurate story that leaves room for learning and play?',
+    'What do I actually want more of sexually (feelings, not just acts)?',
+    'What feels hard to say out loud, and how could I phrase it as an I-statement?',
+  ]},
+];
+const PROMPTS_C=[
+  {label:'C1 · Positive affect',prompts:[
+    'Three good things that happened today and why they happened.',
+    'One strength I used today and how it helped.',
+    'One thing I\'m grateful for that I usually overlook.',
+    'One person I appreciate and what I specifically value about them.',
+    'One thing I\'m looking forward to and one small step that makes it more likely.',
+    'If today repeated 1,000 times, what about it would I keep, and what would I change?',
+  ]},
+  {label:'C2 · Gratitude & abundance',prompts:[
+    'Three things I\'m grateful for today and why they happened.',
+    'One hard thing in my life right now that I can still be grateful for in some way, and why.',
+    'Three ways my life today would look like "science fiction" to my great-grandparents.',
+    'Over the past week, what did I start to take for granted again?',
+  ]},
+  {label:'C3 · Loving-kindness',prompts:[
+    'Right now, what do I wish for myself (in one sentence)?',
+    'What do I genuinely wish for my wife / daughter / dad / brother / friend?',
+    'What is one concrete way I can embody that wish in my actions this week?',
+    'When I imagine sending kindness to someone I struggle with, what resistance shows up? What might that resistance need from me?',
+  ]},
+  {label:'C7 · Abundance, attraction & focus',prompts:[
+    'Areas where I already experience abundance (skills, relationships, opportunities) that I usually under-notice are...',
+    'If I behaved like someone who believed opportunities were everywhere today, what would I do differently?',
+    'Three ways I can create more value for others this week (family, work, community).',
+    'The one result that matters most to me this month is...',
+    'Three actions this week that would make it more likely, in my direct control.',
+    'What distractions or scarcity stories pulled me off track today, and how can I respond differently tomorrow?',
+    'Three good things that happened today and what they say about me or my life.',
+    'One thing that went wrong - and one hidden benefit or lesson.',
+    'One way today showed that I\'m more capable than I thought last year.',
+    'One win, one effort I\'m proud of, one thing I\'m curious about for tomorrow.',
+  ]},
+];
+const PROMPTS_D=[
+  {label:'D1 · Creativity & imagination',prompts:[
+    'List as many unusual uses as possible for: [brick / paperclip / coffee mug / running shoe].',
+    'What if every run was in a different city - how would that change how I train and live?',
+    'What if I had to redesign my job as a game with levels, XP, and bosses?',
+    'What if I could only use my phone for 10 minutes a day - how would my life reorganise?',
+    'Take a mundane moment from today and rewrite it as a thriller. Then as a comedy. Then as sci-fi or fantasy.',
+    'What details changed between versions, and what stayed the same?',
+    'Imagine one concrete future event (race, project, trip). What do I see, hear, smell, feel? What am I doing step by step? What emotions am I feeling?',
+    'Because I lived this, what did I have to do in the weeks leading up to it?',
+    'Daily snapshot: sketch a moment from today, then write 3-5 lines about what was happening inside.',
+    'Symbol page: draw symbols for current themes and write what each means right now.',
+    'Dream snapshot: sketch the most vivid dream image, then write: "What might this be pointing to in my life?"',
+    'Scene scan: list 10 details I\'d usually ignore in my environment, then reconstruct that scene from memory in sensory detail.',
+  ]},
+  {label:'D2 · Being more artistic',prompts:[
+    'If I weren\'t worried about being "good," what art or creative thing would I try first?',
+    'What did "art" mean to me as a kid, and what tiny piece of that could I bring back this week?',
+    'What are three moments from today that could be the opening scene of a short story, film, or song?',
+    'If my life had a "creative side quest" this month, what would the quest description say?',
+    'What rules or stories about art do I carry, and whose voice is that?',
+    'What is one 10-minute creative experiment I can do tomorrow with zero expectation of it being good?',
+  ]},
+  {label:'D3 · Curiosity & interests',prompts:[
+    'Right now, what are 10 things I\'m even slightly curious about?',
+    'Of these, which three give me a little jolt of energy when I read them back? Why?',
+    'For each of those three, what is one "micro-exploration" I could do in 15-30 minutes this week?',
+    'When was the last time I followed a small curiosity thread and it led somewhere interesting?',
+    'If I treated my life like a curiosity map, what are the big "regions," and what open questions live in each?',
+    'What gets in the way of following my curiosity, and what is one way to lower that barrier by 10%?',
+    'If no one else\'s opinion mattered, what would I spend more time learning or doing this month?',
+    'What interests keep resurfacing over the years, even when I ignore them?',
+    'For one interest, what does "level 1" look like this week?',
+    'What stories do I tell myself about why I "can\'t" follow certain interests, and are they fully true?',
+    'How could I turn one interest into a small ritual?',
+    'In 5 years, what would I regret not exploring at least a little?',
+  ]},
+  {label:'D4 · Work & career',prompts:[
+    'What was one win from today at work?',
+    'What was one gap or challenge I faced?',
+    'What is one specific next step for tomorrow based on that?',
+    'Where did I use my strengths today? Where did I "leak" time or focus?',
+    'STAR-LF - Situation: What happened? Who was involved?',
+    'Task: What was I trying to achieve?',
+    'Action: What did I actually do or say?',
+    'Result: What happened as a consequence?',
+    'Learning: What worked, what didn\'t, and why?',
+    'Future: What will I do the same or differently next time?',
+    'This week, where did I feel most effective at work, and why?',
+    'Where did I feel stuck, bored, or under-used?',
+    'What is one small experiment I can run next week to improve how I work?',
+    'What did I learn about how I want my work life to look 1-3 years from now?',
+  ]},
+];
+const PROMPTS_E=[
+  {label:'E1 · Perspective & conflict',prompts:[
+    'From my perspective, what happened between us? What did I feel, and what story did I tell myself?',
+    'From their perspective, if I were a neutral observer, what might they have been feeling and needing?',
+    'What might be valid about their perspective, even if I disagree with their behaviour?',
+    'If a neutral third-party who cares about both of us wrote advice, what would they suggest I do next?',
+  ]},
+  {label:'E2 · Relationship gratitude',prompts:[
+    'Three things I appreciated about [person] in the last week.',
+    'One time they made my life easier or better recently.',
+    'If I actually told them one of these today, what words would I use?',
+  ]},
+  {label:'E3 · Pattern mapping',prompts:[
+    'In my relationships this week, what situations triggered the strongest reactions in me?',
+    'What did I tend to do when I felt stressed, criticised, or ignored?',
+    'If I run that pattern for 5 years with [person], where does it lead?',
+    'What alternative micro-pattern could I test next week?',
+  ]},
+  {label:'E4 · Conversation planning',prompts:[
+    'What do I actually want from this conversation (connection, understanding, problem-solving)?',
+    'What am I afraid will happen?',
+    'How can I start with an I-statement about my feelings and needs, not an accusation?',
+    'What\'s one thing I can validate about their perspective before I present mine?',
+  ]},
+  {label:'E5 · Relationship bank',prompts:[
+    'One moment this week I felt especially close to [person] - what made it meaningful?',
+    'What small ritual or habit could we create to get more of that?',
+  ]},
+  {label:'E6 · Being more open',prompts:[
+    'In conversations, what do I usually hide or downplay about myself, and why?',
+    'What am I afraid will happen if I\'m more open (realistic worst-case)?',
+    'What is a more realistic best-case if I share a bit more honestly?',
+    'Who feels safest to practice being more open with, and what is one thing I haven\'t told them that would bring us closer?',
+    'Next time someone asks "How are you?", what is a slightly more honest answer I could give?',
+    'What do I wish other people were more open about with me, and how could I model that first?',
+  ]},
+  {label:'E7 · Life as game',prompts:[
+    'If my life were an open-world RPG, what main quest am I on this year?',
+    'What are my side quests?',
+    'What XP did I gain today and in which stat?',
+    'Who are my party members and what roles do they play?',
+    'What would levelling up look like in the next 30 days in one key stat?',
+  ]},
+  {label:'E8 · Younger me',prompts:[
+    'If 8-year-old me could watch a day in my life, what would he think was coolest?',
+    'What would disappoint him, and why?',
+    'What is one change I could make this week that 8-year-old me would be proud of?',
+    'What did he assume I\'d be brave enough to do that I\'m still avoiding?',
+  ]},
+  {label:'E9 · Future me',prompts:[
+    'What would my 80-year-old self beg me to stop wasting time on?',
+    'Which tiny daily actions would my 80-year-old self say matter more than I think?',
+    'If I had 30 minutes with my 80-year-old self, what one question would I ask?',
+    'If I live in a way that makes 80-year-old me proud, what did I do this year?',
+  ]},
+  {label:'E10 · Ancestors',prompts:[
+    'If my ancestors could see my life today, what struggles would they instantly recognise?',
+    'What opportunities do I have that they never did, and how can I honour that?',
+    'What choices would make them say "you used what we gave you well"?',
+    'What family traits am I carrying forward - and how do I want to evolve them?',
+  ]},
+  {label:'E11 · Season of life',prompts:[
+    'If this period of my life were a season in a TV series, what would the season title be?',
+    'What is the main character arc this season is trying to push me through?',
+    'What is the "boss fight" of this season, and what skills do I need to train to beat it?',
+    'How will I know, in concrete terms, that I completed this season well?',
+  ]},
+  {label:'E12 · Values',prompts:[
+    'What are my 3-5 core values right now?',
+    'Looking at my last 7 days, where did my actions clearly reflect those values, and where did they not?',
+    'In one area where I felt out of alignment recently, what value was I compromising, and what could I do differently next time?',
+    'Which value do I most want to embody more consistently this month, and one concrete way to practice it this week?',
+    'Who are 2-3 people I admire? What qualities do they have that point to values I also care about?',
+  ]},
+  {label:'E13 · Life design',prompts:[
+    'What do I want to experience more of in my life over the next 1-3 years?',
+    'How do I want to grow in the next year?',
+    'How do I want to contribute to the world or to the people around me?',
+    'Do my current goals truly reflect my desires, or someone else\'s expectations?',
+    'If I improved just one area of my life by 10% over the next 90 days, which area would make the biggest difference, and why?',
+  ]},
+  {label:'E14 · Identity consolidation',prompts:[
+    'Describe myself using the first 10 words that come to mind. Then 10 words I want to describe myself. What\'s one behaviour that moves me from list A to list B?',
+    'When do I feel most like myself? What values and activities are present in those moments?',
+    'If someone watched my last week like a documentary, what story about me would they tell?',
+    'What would "the next version of me" actually do differently on a normal Tuesday?',
+  ]},
+  {label:'E15 · Daily micro-reflection',prompts:[
+    'What went well today, and what am I grateful for?',
+    'What challenged me, and how did I respond?',
+    'Did my actions align with my values and current goals today? Where yes / where no?',
+    'What did I learn about myself today?',
+    'What is one small thing I want to do differently tomorrow?',
+  ]},
+  {label:'E16 · Monthly meta-question',prompts:[
+    'Looking at all these prompts, which ones actually move the needle for me, and which feel like noise?',
+  ]},
+];
+const MANTRAS=[
+  'May I be safe. May I be healthy. May I live with ease. May I be kind to myself in this moment.',
+  'May you be safe. May you be healthy. May you live with ease.',
+  'This is a moment of suffering; suffering is part of being human; may I be kind to myself right now.',
+  'I can be on my own side, even when I\'ve made a mistake.',
+  'I\'m allowed to learn in public.',
+  'I don\'t need to be perfect to make progress.',
+  'One small action matters more than a perfect plan.',
+  'A setback is data, not a verdict.',
+];
+const THEME_SECTIONS={B:PROMPTS_B,C:PROMPTS_C,D:PROMPTS_D,E:PROMPTS_E};
+const CORE_MIND=[
+  {label:'A1 · Expressive writing',prompts:[
+    'What exactly happened in this stressful event? What were the key moments?',
+    'How did I feel during it, and how do I feel about it now?',
+    'Why does this event matter to me? What has it changed in my life or identity?',
+    'How has this experience affected my view of myself, others, or the world?',
+    'What have I learned from this, or what might I learn if I stayed open to it?',
+    'If I respond differently in the future, what could that look like in specific situations?',
+  ]},
+  {label:'A2 · Cognitive restructuring',prompts:[
+    'What happened? (just the facts)',
+    'What was the sentence in my head? (automatic thought)',
+    'What emotions did I feel, and how intense were they (0-10)?',
+    'Which thinking style is this (all-or-nothing, catastrophising, mind-reading, etc.)?',
+    'What is a more balanced, specific way to see this?',
+    'If I believed the balanced thought, what small action would I take next?',
+    'If my best friend had this thought, what would I say to them?',
+    'What evidence supports this thought? What evidence goes against it?',
+  ]},
+  {label:'A3 · Pattern & identity',prompts:[
+    'What patterns in my reactions showed up this week (situations, thoughts, emotions, actions)?',
+    'If I let this pattern run for 5 years, where does it realistically lead?',
+    'What pattern do I want instead? What experiment can I run next week to test it?',
+    'This week I learned that I tend to be the person who... when under pressure.',
+    'In one sentence: when I\'m at my best under pressure, I am the person who...',
+  ]},
+  {label:'A4 · Anxiety',prompts:[
+    'Right now, what am I most worried will happen?',
+    'What physical sensations tell me I\'m anxious (where in my body, 0-10)?',
+    'If my anxiety had a headline today, what would it say?',
+    'What am I afraid this feeling means about me or my future?',
+    'If the worst-case scenario actually happened, what would that look like specifically?',
+    'Then what would I do, step by step, to cope or respond?',
+    'What is a more likely outcome than the worst-case, and what would that look like?',
+    'What evidence do I have that I\'ve handled hard things before?',
+    'What are today\'s worries? (list them quickly without editing)',
+    'Which of these are in my control, partly in my control, or not in my control?',
+    'For the ones in my control: what is one tiny action I can take in the next 24 hours?',
+    'For the ones not in my control: how can I respond internally (phrase, breath, letting go)?',
+    'When I feel anxious, what do I tend to do to feel "safer" (avoidance, checking, reassurance)?',
+    'How does this help me short-term, and how might it keep anxiety going long-term?',
+    'What is one small experiment I could try where I reduce or delay a safety behaviour?',
+    'If I ran that experiment, what did I actually learn about my anxiety?',
+    'If someone I cared about felt this exact anxiety, what would I want them to know?',
+    'What makes sense about why my nervous system is reacting like this?',
+    'What is one kind thing I can say to myself while the anxiety is here?',
+    'What is one kind, concrete action I can take to support myself right now?',
+  ]},
+  {label:'A5 · OCD',prompts:[
+    'Trigger / intrusive thought: What happened or what popped into my mind?',
+    'Obsession: What is the scary thought or image? Write it exactly.',
+    'Emotion + intensity: What am I feeling (fear, guilt, disgust) 0-100%?',
+    'Compulsion urge: What do I feel like doing to neutralise or get certainty?',
+    'Realistic reframe: How likely is this really (0-100%)?',
+    'If this were just an OCD story, how would I describe it?',
+    'Response prevention plan: next time, what will I not do (ritual), and what will I do instead (stay, breathe, refocus)?',
+    'Imaginal exposure: My worst fear is that... (describe the feared scenario in vivid detail).',
+    'In this story, I... (let the feared outcome fully play out instead of reassuring myself).',
+    'If this happened, what would I actually do next, step by step?',
+  ]},
+  {label:'A6 · ADHD support',prompts:[
+    'Everything on my mind right now (tasks, worries, ideas).',
+    'Must do today (5 items or fewer).',
+    'Could do if I have time/energy.',
+    'What is the very first tiny step for my top "must"?',
+    'When today will I start it (time or "after X")?',
+    'What are my 1-3 time blocks today?',
+    'After each block: What did I actually do? What got in the way? What small tweak next time?',
+    'If this task were already broken into 5 tiny steps, what might those be?',
+    'What is step 1 that I could do in under 5 minutes?',
+    'What would make step 1 even easier (setup, environment, cue)?',
+  ]},
+  {label:'A7 · Procrastination',prompts:[
+    'What was I supposed to be doing? What did I do instead?',
+    'What was I feeling or thinking right before I switched tasks?',
+    'What was I trying to avoid (boredom, fear of failure, confusion, effort)?',
+    'What would have been a 2-minute version of starting?',
+    'If it is [time / situation], then I will [very small, concrete action].',
+    'If [obstacle] happens, then I will [workaround].',
+    'Today\'s main if-then: "If [trigger], then I will [tiny action]." My backup plan if that fails is...',
+    'For this task, what is the smallest next step I could do in 2-5 minutes? When exactly will I do it?',
+    'I did / didn\'t do the micro-step. What actually happened? What helped, or what\'s one tweak to try next?',
+    'What did I actually spend my time on today?',
+    'If my best friend described my day, what would they call me (lazy, tired, overwhelmed, understimulated)?',
+    'What was my brain trying to get for me today (relief, stimulation, escape, control)?',
+    'Given that, what is one small change I can try tomorrow to meet that need in a healthier way?',
+  ]},
+  {label:'A8 · Anger (prep · in-moment · processing)',prompts:[
+    'Prep: When I\'m angry, I want to be the person who...',
+    'Prep: When I notice anger rising (body signs), then I will: pause and name it, take 3-5 slow breaths, step away if needed, use an I-statement instead of blaming.',
+    'Prep: Phrases to use - "I\'m feeling really worked up; I need a few minutes before we talk."',
+    'Prep: Phrases to use - "I\'m angry, but I want to handle this well. Can we slow down?"',
+    'Prep: In the past I would have... In future I will practice...',
+    'In-moment: What just happened? (facts)',
+    'In-moment: What am I feeling right now (not just anger)? Where do I feel it in my body?',
+    'In-moment: On a scale of 0-10, how strong is this? What am I wanting to do impulsively?',
+    'Processing: What specific action or event triggered my anger? What meaning did I give it?',
+    'Processing: Under the anger, am I also feeling hurt, scared, disrespected, powerless, or ashamed?',
+    'Processing: What value or boundary feels violated?',
+    'Processing: If I see anger as a signal about my needs, what is it asking for?',
+  ]},
+];
+const MORNING_MOODS=['Positive','Loved','Energetic','Inspired','Rested','Present'];
+const EVENING_MOODS=['Peaceful','Grounded','Purposeful','Content','Focused','Grateful'];
+const TASK_STRUCTURE=[
+  {block:'Morning — Wake & Ground',tasks:[
+    {id:'sleep-log',label:'Sleep Log',xp:0,sleepLog:true},
+    {id:'specialist-stretch',label:'Morning Stretches + Coffee',xp:0,habit:'mobility',sub:'Move first thing, coffee in hand',subtasks:[
+      {id:'ss-1',label:'Hip flexor stretch'},
+      {id:'ss-2',label:'Thoracic extension'},
+      {id:'ss-3',label:'Hamstring stretch'},
+      {id:'ss-4',label:'90/90 hip rotation'},
+      {id:'ss-5',label:'Dead bug'},
+    ]},
+    {id:'meditate-am',label:'Meditation',xp:0,habit:'meditation',logKey:'med-am',logLabel:'min'},
+    {id:'kegels-am',label:'Kegels',xp:0,habit:'kegels',logKey:'kegel-am',logLabel:'min'},
+    {id:'water-garden',label:'Water garden',xp:0,habit:'garden'},
+  ]},
+  {block:'Getting Ready',tasks:[
+    {id:'morning-shower',label:'Shower',xp:0,habit:'hygiene'},
+    {id:'hygiene-teeth-am',label:'Teeth',xp:0,habit:'hygiene'},
+    {id:'hygiene-skin-am',label:'Skincare',xp:0,habit:'hygiene'},
+  ]},
+  {block:'Lunch',tasks:[
+    {id:'brain-dump',label:'Midday Reframe — 5 min',xp:0,habit:'journal',journalKey:'brain-dump-text',sub:'5 min max. Write the negative, then flip each one into a positive or a next step.'},
+  ]},
+  {block:'After Work',tasks:[
+    {id:'jd-pm',label:'In Depth Journal — Afternoon',xp:0,habit:'journal',journalKey:'indepth-pm'},
+    {id:'erp',label:'ERP / Core Mind Work',xp:0,habit:'erp',sub:'Pick one set, work the whole sequence in one sitting'},
+  ]},
+  {block:'Afternoon',tasks:[
+    {id:'house-chores',label:'House Chores',xp:0,habit:'garden',subtasks:[
+      {id:'hc-bedroom',label:'Bedroom'},
+      {id:'hc-bathroom',label:'Bathroom'},
+      {id:'hc-laundry',label:'Laundry'},
+      {id:'hc-kitchen',label:'Kitchen'},
+      {id:'hc-garden',label:'Water garden'},
+    ]},
+    {id:'florence',label:'Florence Time',xp:0,habit:'family'},
+    {id:'dinner',label:'Dinner',xp:0,subtasks:[
+      {id:'din-make',label:'Make dinner'},
+      {id:'din-prep',label:'Prep tomorrow\'s food'},
+      {id:'din-eat',label:'Eat dinner'},
+    ]},
+    {id:'afterdinner-chores',label:'After Dinner Chores',xp:0,subtasks:[
+      {id:'adc-dishes',label:'Clean dishes'},
+      {id:'adc-kitchen',label:'Kitchen'},
+      {id:'adc-lounge',label:'Lounge'},
+      {id:'adc-laundry',label:'Laundry'},
+      {id:'adc-bathroom',label:'Bathroom'},
+      {id:'adc-bedroom',label:'Bedroom'},
+    ]},
+    {id:'prep-tomorrow',label:'Prep for Tomorrow',xp:0,subtasks:[
+      {id:'pt-work',label:'Work clothes'},
+      {id:'pt-gym',label:'Gym clothes'},
+      {id:'pt-food',label:'Food'},
+    ]},
+  ]},
+  {block:'Training — The Commitment',tasks:[
+    {id:'gym-session',label:'Today\'s Training Session',xp:0,habit:'exercise',gymLink:true},
+    {id:'mobility',label:'Mobility',xp:0,habit:'mobility',subtasks:[
+      {id:'mob-alo',label:'Alo Moves session (best)'},{id:'mob-home',label:'Home stretch (acceptable)'},
+    ]},
+    {id:'kegels-pm',label:'Kegels',xp:0,habit:'kegels'},
+  ]},
+  {block:'Post Gym',tasks:[
+    {id:'nutrition-calories',label:'Calories (Bevel)',xp:0,habit:'nutrition',logKey:'cal-today',logLabel:'kcal'},
+    {id:'nutrition-water',label:'Water Intake',xp:0,habit:'nutrition',logKey:'water-today',logLabel:'litres'},
+    {id:'nutrition-alcohol',label:'Alcohol Free Today',xp:0,habit:'nutrition'},
+    {id:'postgym-shower',label:'Shower',xp:0,habit:'hygiene'},
+    {id:'hygiene-shave',label:'Shave',xp:0,habit:'hygiene'},
+    {id:'hygiene-teeth-pm',label:'Teeth — Night',xp:0,habit:'hygiene'},
+    {id:'hygiene-skin',label:'Skincare — Night',xp:0,habit:'hygiene'},
+  ]},
+  {block:'Doom Scroll Purge',tasks:[
+    {id:'doom',label:'DOOM SCROLL PURGE',xp:0,sub:'Screens off at the set time. No exceptions.',subtasks:[
+      {id:'doom-cutoff',label:'Phone & TV off by 9:00pm'},
+      {id:'doom-charge',label:'Phone on charge in another room'},
+      {id:'doom-noscreen',label:'No screens until morning routine done tomorrow'},
+    ]},
+  ]},
+  {block:'Night — Wind Down',tasks:[
+    {id:'breath-night',label:'1 · Breathwork — Get Grounded',xp:0,habit:'breathwork',logKey:'breath-night',logLabel:'min',sub:'Settle the body first.'},
+    {id:'meditate-pm',label:'2 · Meditation — Listen to Your Thoughts',xp:0,habit:'meditation',logKey:'med-pm',logLabel:'min',sub:'Sit with whatever surfaces.'},
+    {id:'j-evening',label:'3 · Blue Journal — Evening',xp:0,habit:'journal',journalKey:'evening',blueJournal:true,sub:'Write while introspective.'},
+    {id:'read',label:'4 · Read a Chapter',xp:0,sub:'A chapter before sleep.'},
+  ]},
+];
+const HABIT_MAP=[
+  {id:'exercise',name:'Training',taskIds:['gym-session']},
+  {id:'breathwork',name:'Breathwork',taskIds:['breath-night']},
+  {id:'meditation',name:'Meditation',taskIds:['meditate-am','meditate-pm']},
+  {id:'journal',name:'Journaling',taskIds:['j-am','j-evening','jd-am','jd-pm','brain-dump']},
+  {id:'mobility',name:'Mobility',taskIds:['mobility','specialist-stretch']},
+  {id:'kegels',name:'Kegels',taskIds:['kegels-am','kegels-pm']},
+  {id:'garden',name:'Garden / Nature',taskIds:['hc-garden','water-garden']},
+  {id:'family',name:'Florence Time',taskIds:['florence']},
+  {id:'erp',name:'ERP Practice',taskIds:['erp']},
+  {id:'nutrition',name:'Nutrition',taskIds:['nutrition-calories','nutrition-water','nutrition-alcohol']},
+  {id:'hygiene',name:'Hygiene',taskIds:['hygiene-teeth-am','hygiene-teeth-pm','hygiene-shave','hygiene-skin','hygiene-skin-am','morning-shower','postgym-shower']},
+];
+const BADGES_DEF=[
+  {id:'b1',name:'First Log',check:s=>s.xp>=10},
+  {id:'b2',name:'3-Day Streak',check:s=>s.streak>=3},
+  {id:'b3',name:'Week Strong',check:s=>s.streak>=7},
+  {id:'b4',name:'Morning Mover',check:s=>!!(s.tasks['morning-run']||s.tasks['gym-session'])},
+  {id:'b5',name:'Inner Work',check:s=>[s.tasks['j-am'],s.tasks['j-evening'],s.tasks['jd-am']].filter(Boolean).length>=2},
+  {id:'b6',name:'ERP Warrior',check:s=>!!s.tasks['erp']},
+  {id:'b7',name:'Full Day',check:s=>s.allDone},
+  {id:'b8',name:'Level 5',check:s=>lvl(s.xp)>=5},
+  {id:'b9',name:'All Rings',check:s=>allRingsClosed()},
+  {id:'b10',name:'Breathwork Daily',check:s=>[s.tasks['breath-am'],s.tasks['breath-pm'],s.tasks['breath-night']].filter(Boolean).length>=2},
+];
+const PERF_FIELDS=[
+  {id:'p-dist',label:'Run Distance',placeholder:'e.g. 5.2 km'},
+  {id:'p-time',label:'Run Time',placeholder:'e.g. 28:14'},
+  {id:'p-pace',label:'Avg Pace /km',placeholder:'e.g. 5:26'},
+  {id:'p-hr',label:'Avg Heart Rate',placeholder:'e.g. 152 bpm'},
+  {id:'p-steps',label:'Total Steps',placeholder:'e.g. 9,840'},
+  {id:'p-sleep',label:'Sleep Score',placeholder:'e.g. 74 / 100'},
+  {id:'p-hrv',label:'HRV',placeholder:'e.g. 52 ms'},
+  {id:'p-notes',label:'Session Notes',placeholder:'How did it feel?'},
+];
+const GYM_DAYS=[
+  {label:'Mon',key:'d1',title:'Lower Pull — Primary',goal:'Deadlift focus · glutes & posterior chain · heavy lumbar day · ~2h05. Lower Pull primary, Lower Push + Upper Push secondary, Upper Pull mobility only.',sections:[
+    {hd:'Morning — Home · 25 min · dumbbells, mat, band',ex:[
+      {n:'Diaphragmatic breathing 360° + Hip CARs',d:'8 breaths + 5 each hip. Inhale into ribs + back, exhale ribs down. Biggest controlled hip circle.'},
+      {n:'Deep neck flexor chin tuck',d:'2×10 · 3s hold. Draw chin straight back. Counters desk posture.'},
+      {n:'Thoracic extension over rolled towel + wall slide / Y-raise',d:'2×8 · 2s hold + 2×10. Full T-spine extension, then arms slide overhead.'},
+      {n:'Serratus wall reach + pike push-up / plank shoulder tap superset',d:'3×10 + 3 rounds. Protraction then retraction, hips high, immediate shoulder taps.'},
+      {n:'Floor lat stretch — child\'s pose arm reach',d:'2×30s/side. Reach one arm along mat, drop chest. Full lat lengthening.'},
+    ]},
+    {hd:'A · Hinge + Swing + Core (deadlift / KB swing / dead bug) — one round, rest 90s',ex:[
+      {n:'A1 · Deadlift',d:'5 sets: 100/110/120/130kg ×1–3. Ascending. Floor away, full lockout. 1 paused rep on opener. 130kg min, add reps as strength grows.'},
+      {n:'A2 · Kettlebell swing',d:'3×15 @ 24kg. Hip hinge not squat. Hip snap drives bell. Hamstrings load eccentrically.'},
+      {n:'A3 · Dead bug — BW',d:'3×10/side. 4s extension. Posterior tilt held. Anti-extension between hinge sets.'},
+    ]},
+    {hd:'B · Posterior Chain Circuit (cable pull-through / cable step-up / Nordic curl) — flow, minimal rest',ex:[
+      {n:'B1 · Cable pull-through',d:'3×8/leg. Posterior tilt. Drive hips to full extension. Gradual load increase.'},
+      {n:'B2 · Cable step-up',d:'3×10/leg @ 20kg. Step fully onto box. Drive through heel, control the lower.'},
+      {n:'B3 · Nordic hamstring curl',d:'3×AMRAP. Lower as slowly as possible. Band assist to return. Monday + Sunday only.'},
+    ]},
+    {hd:'C · Multifidus Circuit (loaded back ext / good morning / Y-T-W) — flow, minimal rest',ex:[
+      {n:'C1 · Loaded back extension',d:'3×8–10 @ 20kg. Lower to neutral, 2s hold. DO NOT hyperextend.'},
+      {n:'C2 · Weighted good morning',d:'2×12 @ 30kg. Hinge to horizontal. 3s eccentric. Multifidus + erector synergy.'},
+      {n:'C3 · Prone Y-T-W raise',d:'2×8 each @ BW. Face down. Y then T then W. 2s hold each. No momentum.'},
+    ]},
+    {hd:'D · Lower Push — Secondary (BSS forward lean + moderate hip thrust)',ex:[
+      {n:'D1 · BSS — forward lean / glute bias',d:'3×6–8/leg @ 2×15kg. Forward lean, glute bias. 3s eccentric, 2s hold at bottom.'},
+      {n:'D2 · Barbell hip thrust — moderate',d:'3×8 @ 80kg. Full lockout, 2s squeeze. Moderate load — primary hip thrust is Wednesday.'},
+    ]},
+    {hd:'E · Upper Push — Secondary (tempo bench + push press)',ex:[
+      {n:'E1 · Tempo bench (4-0-1)',d:'3×6–8 @ 70kg. 4s eccentric, 0 pause, 1s concentric. ~75% of Friday max.'},
+      {n:'E2 · Push press OHP',d:'3×8 @ 35kg. Slight knee dip, drive through hips. Full overhead lockout. Speed/power OHP.'},
+    ]},
+    {hd:'F · Core + Abs (circuit, minimal rest)',ex:[
+      {n:'F1 · Pallof press — standard',d:'2×10–12/side @ 20kg. Full arm extension. Anti-rotation. Standard standing on Monday.'},
+      {n:'F2 · Cable woodchop',d:'2×10/side @ 20kg. Full rotational arc. Hip initiates, core transfers.'},
+      {n:'F3 · Bird dog cable',d:'2 sets/side. Opposite arm + leg. Anti-rotation + extension. Most running-specific core.'},
+      {n:'F4 · Dead bug — BW',d:'3×10/side. 4s extension. Posterior tilt held.'},
+    ]},
+    {hd:'G · Arms (hammer curl / reverse curl / tricep pushdown — circuit)',ex:[
+      {n:'G1 · Hammer curl',d:'3×12 @ 14kg. Neutral grip. Brachialis + brachioradialis thickness.'},
+      {n:'G2 · Reverse curl (EZ bar)',d:'2×12 @ 20kg. Overhand grip. Brachioradialis + forearm extensors. Fresh on Monday.'},
+      {n:'G3 · Tricep cable pushdown',d:'3×12–15 @ 25kg. Full extension at bottom. 1s hold. Lateral head emphasis.'},
+    ]},
+    {hd:'Upper Pull — Mobility Only',ex:[
+      {n:'Dead hang',d:'2×30s'},
+      {n:'Lat stretch kneeling',d:'2×30s/side'},
+      {n:'Scapular circles',d:'5 each direction. BW only.'},
+    ]},
+    {hd:'Pool Finisher · 35 min',ex:[
+      {n:'Passive immersion',d:'3–5 min. Cool water within 15–20 min. Hip CARs in water.'},
+      {n:'90/90 in shallows',d:'1–2 min/side. Decompressed hip rotation.'},
+      {n:'Shoulder CARs',d:'2 min. Full shoulder circumduction.'},
+      {n:'Nasal breathing float',d:'2–3 min. 4 in / 4 hold / 6 out. Reset.'},
+    ]},
+  ]},
+  {label:'Tue',key:'d2',title:'VO₂ Intervals + Loaded Power',goal:'Speed, VO₂max, explosive power · upper body only at home, no legs AM · ~55 min. 5km test every 6 weeks.',sections:[
+    {hd:'Morning — Home · 25 min · NO LEGS (legs need 100% freshness for tonight)',ex:[
+      {n:'Diaphragmatic breathing + band pull-apart + floor lat stretch + shoulder CARs',d:'8 breaths + 2×15 + 2×30s/side + 5 circles. 360° inhale. Band horizontal abduction.'},
+      {n:'Serratus push-up + push-up AMRAP / prone DB row superset',d:'4 rounds: AMRAP + 10 rows/side. Protraction then retraction. Push-ups to floor, then prone DB row.'},
+      {n:'Hollow body hold / dead bug superset + Chinese plank hold',d:'3 rounds: 20s + 6 dead bugs/side + 25s each. Arms overhead, lower back to mat. Then dead bug 4s extension.'},
+    ]},
+    {hd:'A · Warm-up + Skipping + Pogo Jumps (CNS primer before loaded power) — flow',ex:[
+      {n:'A1 · Wall ankle stretch + A+B walks + sprint drills',d:'5/side + 2 sets + 3×20m. Knee-to-wall dorsiflexion. Knee hugs, leg swings, hip openers.'},
+      {n:'A2 · Easy jog — nasal only',d:'3–5 min. Nose only. Establishes aerobic zone before loading.'},
+      {n:'A3 · Skipping',d:'2×60s. Basic then high-knee skip. Elastic ankle + calf CNS primer.'},
+      {n:'A4 · Single-leg pogo jumps',d:'3×10 each leg. Stiff ankle springs, minimal knee bend. Max elastic rebound, ground contact as short as possible.'},
+    ]},
+    {hd:'B · Loaded Power (trap bar jump squat) — max intent every rep, full reset',ex:[
+      {n:'B1 · Trap bar jump squat',d:'3×3 @ 40kg. Squat to parallel, explode vertically — leave the ground. Land soft through ankle→knee→hip. Most important explosive exercise. Progress to 70kg.'},
+    ]},
+    {hd:'C · Plyometrics + Acceleration Sprints (3 elements, CNS preserved) — flow',ex:[
+      {n:'C1 · Broad jump',d:'3 reps max distance. Full reset between reps. Max effort.'},
+      {n:'C2 · Depth drop → broad jump complex',d:'3×3 off 40–60cm box. Absorb, immediately broad jump. Minimum ground contact time.'},
+      {n:'C3 · Acceleration sprints',d:'3×30m. Build from standing start to 85% max. Only sprint work in program. 85% effort, full recovery.'},
+    ]},
+    {hd:'D · Main Session — Hard Intervals (2 min recovery jog @ 6:45–7:00/km between)',ex:[
+      {n:'D1 · Hard intervals',d:'Int 1: 5:00 ×3 min · Int 2: 4:48 ×3 min · Int 3: 4:37 ×4 min · Int 4: 5:00 ×4 min. Descending splits. Int 1 controlled, Int 2 harder, Int 4 back to Int 1 pace. Update paces every 6 weeks after time trial.'},
+      {n:'D2 · 5km time trial — every 6 weeks',d:'Replace final interval. Cut to 2 intervals then flat-out 5km. Recalculate all paces. Target: sub-26 min in Month 6.'},
+    ]},
+    {hd:'E · Cool-down + Ab Hypertrophy',ex:[
+      {n:'E1 · Easy jog or walk',d:'5–8 min. Full recovery. Nasal breathing. Zone 1.'},
+      {n:'E2 · Single-leg calf raise — eccentric',d:'3×8/side. BW · step edge. Rise on both, lower on one — 3s eccentric. Builds Achilles capacity.'},
+      {n:'E3 · Cable crunch',d:'3×12 @ loaded. Crunch down contracting abs, not pulling with neck. Slow 3s eccentric. Progressive load.'},
+      {n:'E4 · EMOM hollow body + supine lumbar rotation',d:'3 rounds + 90s/side. 30s hollow / 30s rest. Then 90s/side supine lumbar rotation — decompresses after intervals.'},
+    ]},
+    {hd:'Pool Finisher + Swim · Run Day · 35 min',ex:[
+      {n:'Arms-only swim',d:'10 min. Pull buoy. No leg kick.'},
+      {n:'Passive immersion',d:'3–5 min. Cool water. Hydrostatic pressure.'},
+      {n:'Hip CARs in water',d:'3 min. Full circumduction.'},
+      {n:'Leg flush',d:'2 min. Blood return. No effort.'},
+      {n:'Nasal breathing float',d:'2–3 min. 4 in / 4 hold / 6 out.'},
+    ]},
+  ]},
+  {label:'Wed',key:'d3',title:'Lower Push — Primary',goal:'Squat focus · sissy squat + glutes · quads & glutes · ~2h05. Lower Push primary, Upper Pull + Upper Push secondary, Lower Pull mobility only. Carries are first evening block.',sections:[
+    {hd:'Morning — Home · 25 min · mat, band, step · plyometrics included',ex:[
+      {n:'Diaphragmatic breathing + wall ankle stretch',d:'8 breaths + 2×8 each. Straight leg: gastroc. Bent knee: soleus. Both needed for full squat depth tonight.'},
+      {n:'Ankle CARs + toe yoga + tibialis raise + skipping',d:'2×10 each + 2×20 + 3×30s. Full ankle circumduction. Tibialis: heels on step. Skipping: basic then high-knee.'},
+      {n:'Ankle pogo + lateral bound + box jumps + depth drop → broad jump',d:'3×15 + 3×6/side + 3×3. Pogo: stiff ankle springs. Lateral bound: land soft. Box jumps: max intent. Depth drop: step off, absorb, immediately broad jump.'},
+      {n:'Band face pull + serratus punch + DB overhead slam',d:'3×12 each. Face pull: protraction/retraction. Serratus punch. DB slam: reach overhead then explosive trunk flexion.'},
+    ]},
+    {hd:'A · Squat + Core Circuit (sissy squat pre-activation / squat / ab wheel / dead bug cable) — sissy squat first, then rounds, rest 90s',ex:[
+      {n:'A1 · Sissy squat — pre-activation',d:'2×10 @ 20kg DB. Heels elevated, lean back, hold DB at chest. Pure VMO pre-activation.'},
+      {n:'A2 · Squat — Main Focus',d:'100kg×6 / 110kg×5 / 120kg×4 / 125kg×1 attempt. Ascending. Full depth, 3s eccentric. 125kg only if 120kg felt clean. Fire glute med. Rest 3 min.'},
+      {n:'A3 · Ab wheel rollout',d:'3×10. Full extension between squat sets. +5cm reach progression.'},
+      {n:'A4 · Dead bug — cable',d:'2×8/side. One arm holds cable overhead, opposite leg extends. AOS + DLS.'},
+    ]},
+    {hd:'B · Glute Circuit (BSS upright / hip thrust heavy / banded hip thrust / single-leg hip thrust) — flow',ex:[
+      {n:'B1a · BSS — single DB glute bias',d:'2×6/side @ 40kg DB. 40kg rested on rear thigh. Forward lean, glute bias. 3s eccentric, 2s hold at bottom. Brace hard.'},
+      {n:'B1b · BSS — dual DB upright (quad bias)',d:'2×6/side @ 2×20kg. Two 20kg DBs either side. Upright torso, quad emphasis. Immediately after B1a.'},
+      {n:'B2 · Hip thrust — Main Focus',d:'100/110/120/130kg. Posterior tilt before drive. Full extension, 2s squeeze. Rest 2 min.'},
+      {n:'B3 · Banded hip thrust — 3s hold',d:'2×8. 3s hold at full extension. Band creates abduction demand.'},
+      {n:'B4 · Single-leg hip thrust',d:'2×8–10/leg. Finish with 10s single-leg eyes-closed balance each side.'},
+    ]},
+    {hd:'C · Posterior Chain Finish (Nordic curl / isometric wall sit)',ex:[
+      {n:'C1 · Nordic hamstring curl',d:'3×AMRAP. Lower as slowly as possible. Band assist to return. Wednesday + Sunday only — max 2×/week.'},
+      {n:'C2 · Isometric wall sit + patellar tendon',d:'3×30s hold @ 90°. Knees at 90° against wall. Direct patellar tendon conditioning. 30s, rest 60s.'},
+    ]},
+    {hd:'D · Upper Pull — Secondary (neutral chin-up + T-bar row)',ex:[
+      {n:'D1 · Chin-ups — neutral grip',d:'3–4×AMRAP @ BW. Full dead hang. Wednesday = neutral grip. Moderate effort.'},
+      {n:'D2 · T-bar row',d:'3×8–10 @ 40kg. Full stretch at bottom, full retraction. 2s hold at top.'},
+    ]},
+    {hd:'E · Upper Push — Secondary (pause bench + standing DB press)',ex:[
+      {n:'E1 · Pause bench — 2s pause at chest',d:'3×6–8 @ 75kg. 2s pause eliminates stretch reflex. Moderate vs Friday heavy bench.'},
+      {n:'E2 · Standing DB press',d:'3×6–8 @ 22.5kg. Full overhead ROM. Core demand elevated vs seated.'},
+    ]},
+    {hd:'F · Core + Abs (circuit, minimal rest)',ex:[
+      {n:'F1 · Cable crunch',d:'2×12–15 @ 25kg. Full spinal flexion. Pause 1s at bottom.'},
+      {n:'F2 · Pallof press — half-kneeling',d:'2×10–12/side @ 20kg. Half-kneeling removes hip base — pelvis must stabilise.'},
+      {n:'F3 · Toes-to-bar progression',d:'3×AMRAP. Dead hang → scapular pull → knees → TTB. Zero momentum.'},
+      {n:'F4 · Quadruped segmental extension',d:'2×8/side. 3s hold. Extend one leg back without rotation. McGill gold-standard multifidus.'},
+    ]},
+    {hd:'G · Arms (preacher curl + skull crusher — superset back-to-back)',ex:[
+      {n:'G1 · Preacher curl',d:'3×12 @ 25kg. Full ROM. Pause 1s at top. Pure bicep isolation — short head dominant.'},
+      {n:'G2 · Skull crusher (EZ bar)',d:'3×12 @ 20kg. Full stretch at bottom. Full extension at top. Long head emphasis.'},
+    ]},
+    {hd:'H · Sling + Carries (sandbag lunge / sled push / farmer carry) — done after warm-up before primary work',ex:[
+      {n:'H1 · Sandbag walking lunge',d:'2×20 steps @ 20kg. Full depth. Drive through front heel.'},
+      {n:'H2 · Sled push',d:'2×20m @ 40kg. Drive from hips. Sprint mechanics. Start conservative.'},
+      {n:'H3 · Farmer carry',d:'2×40m @ 25kg/hand. Tall spine. Shoulder packed. Resist trunk sway.'},
+    ]},
+    {hd:'Lower Pull — Mobility Only',ex:[
+      {n:'Jefferson curl',d:'2×5 BW (4s down, 3s hold)'},
+      {n:'Supine hamstring stretch',d:'2×45s'},
+      {n:'Dead hang',d:'1×30s. BW only.'},
+    ]},
+    {hd:'Pool Finisher · 35 min',ex:[
+      {n:'Passive immersion',d:'3–5 min. Cool water within 15–20 min.'},
+      {n:'Hip CARs in water',d:'3 min. Full circumduction. Buoyancy offloads joints.'},
+      {n:'90/90 in shallows',d:'1–2 min/side. Decompressed hip rotation.'},
+      {n:'Nasal breathing float',d:'2–3 min. 4 in / 4 hold / 6 out. Reset.'},
+    ]},
+  ]},
+  {label:'Thu',key:'d4',title:'Zone 2 Run + Deep Mobility',goal:'Aerobic base · pace progresses monthly · deep mobility at home · ~40 min. Nothing restricted — Zone 2 creates almost no muscular demand. Best day for full mobility work.',sections:[
+    {hd:'Morning — Home · 30 min · mat, band only',ex:[
+      {n:'Diaphragmatic breathing + Hip CARs + 90/90 PAILs/RAILs',d:'10 breaths + 5 each hip + 60s each side. Exhale ribs down, TVA in. 90/90: push shin 20s, pull shin 20s.'},
+      {n:'Jefferson curl — BW',d:'3×5 · 4s down · 3s hold at bottom. One vertebra at a time. Best spinal tendon conditioning available.'},
+      {n:'Couch stretch + pigeon pose — PAILs/RAILs each',d:'2×60s + 90s each side. Couch: push rear foot 20s, drive hip forward 10s. Pigeon: push shin 20s, pull hip deeper 10s.'},
+      {n:'Pancake fold + Cossack squat + doorframe chest stretch + seated T-spine rotation',d:'2 min + 3×5 each + 2×45s + 90s/side. Pancake: squeeze 20s. Cossack: 3s hold. Doorframe: breathe 360°.'},
+      {n:'Prone hip flexion + lateral band walk + diagonal chop (AOS)',d:'2×8/side + 2×15 each + 3×10/side. Psoas end-range. Glute med. Anterior oblique sling.'},
+    ]},
+    {hd:'Evening · 8pm · Zone 2 Run · Warm-up + activation',ex:[
+      {n:'Warm-up: lateral band walk + psoas march + nasal jog',d:'10 min total. Glute med primed. Psoas march: knee up, hold 2s, 10 reps/side. 3 min nasal-only jog.'},
+    ]},
+    {hd:'Main Session — Zone 2 Run',ex:[
+      {n:'Zone 2 run',d:'40 min minimum. Conversational pace — full sentences. 40 min minimum effective dose. Nose breathing confirms zone. Pace: Month 1–2: 7:30–7:45/km · Month 3–4: 7:15–7:30 · Month 5–6: 7:00–7:15 · Month 7–8: 6:45–7:00 (close to marathon pace).'},
+      {n:'From Month 3: add 15 min tempo finish',d:'15 min @ 6:20–6:30/km. After Zone 2 finishes, lift to threshold pace 15 min. Lactate threshold stimulus that most improves 5km speed. Start Month 3.'},
+    ]},
+    {hd:'Core (during/after run)',ex:[
+      {n:'Hanging leg raise',d:'3×10. Dead hang. Legs straight or slightly bent. No swing. Add a DB between feet when BW is easy.'},
+    ]},
+    {hd:'Cool-down + Mobility',ex:[
+      {n:'Walk + stretches + lumbar rotation',d:'15 min. Recovery walk → hip flexor + hamstring + calf. 2×45s each → 90s/side supine lumbar rotation. BW only.'},
+    ]},
+    {hd:'Pool Finisher + Swim · Run Day · 35 min',ex:[
+      {n:'Arms-only swim',d:'10 min. Pull buoy. No leg kick.'},
+      {n:'Passive immersion',d:'3–5 min. Cool water. Hydrostatic pressure.'},
+      {n:'Hip CARs in water',d:'3 min. Full circumduction.'},
+      {n:'Leg flush',d:'2 min. Blood return. No effort.'},
+      {n:'Nasal breathing float',d:'2–3 min. 4 in / 4 hold / 6 out.'},
+    ]},
+  ]},
+  {label:'Fri',key:'d5',title:'Upper Push — Primary',goal:'Bench focus · biggest core day · ~2h20. Upper Push primary, Upper Pull secondary, run prep, all lower body removed (run prep only).',sections:[
+    {hd:'Morning — Home · 25 min · dumbbells, mat, band, step',ex:[
+      {n:'Diaphragmatic breathing + posterior pelvic tilt + dead bug',d:'10 breaths + 2×6. Exhale: ribs down + TVA. Tilt: flatten lumbar. Dead bug: 4s extension. No chest/shoulders/triceps — saved for tonight\'s heavy pressing.'},
+      {n:'Half-kneeling psoas march + Copenhagen plank + single-leg RDL with diagonal reach',d:'3×10/side · 2s hold + 3×15s + 3×10/side. Psoas: rear foot off floor. Copenhagen: side plank top foot on chair. RDL: reach opposite hand toward outside foot.'},
+      {n:'Hip abduction circle + single-leg balance eyes open + calf raise eccentric + prone hip flexion',d:'3×10 circles + 3×30s + 3×10 + 2×8/side. Hip circle: full ROM. Balance eyes open (Sunday = eyes closed). Calf: fast up, 3s down. Prone: pure psoas.'},
+    ]},
+    {hd:'A · Bench + Band Pull-Apart + Pallof (band pull-aparts between every bench set)',ex:[
+      {n:'A1 · Bench press — Main Focus',d:'100kg×6 / 90kg×8 / 80kg×10 / 70kg×12. Descending load, ascending reps. Bar to chest, full lockout. Rest 2 min. Form tight on the 70×12. Add 2.5kg to each set when all feel controlled.'},
+      {n:'A2 · Band pull-apart',d:'15 reps between every bench set. Horizontal abduction to full stretch. Scapular health between pressing.'},
+      {n:'A3 · Pallof press — tall-kneeling + rotation',d:'2×10–12/side @ 20kg. Tall kneeling. Full arm extension then slow rotation. Friday = tall-kneeling + rotation.'},
+    ]},
+    {hd:'B · Shoulder Circuit + Landmine Press (OHP / landmine / lateral raise / rear fly) — flow',ex:[
+      {n:'B1 · OHP — dumbbell strict',d:'37.5kg×6 / 40kg×5 / 37.5kg×6 / 30kg×10. DB strict press. Wave loading — peak at 40kg, back off for volume. Full overhead ROM, rib cage down. No leg drive. When 40kg×6 clean, raise top set to 42.5kg.'},
+      {n:'B2 · Landmine press',d:'3×8–10/side @ 15kg. Hip to full lockout arc. Shoulder-friendly pressing angle.'},
+      {n:'B3 · Lateral raise',d:'3×12 @ 12kg. Slow to 90°. 1s hold at top. Control eccentric.'},
+      {n:'B4 · Rear fly',d:'3×12 @ 20kg. 2s hold at full contraction. Full posterior delt ROM. Control the eccentric.'},
+    ]},
+    {hd:'C · Push / Pull Superset (weighted dips / underhand chin-up / cable row) — as 1 round, rest 90s',ex:[
+      {n:'C1 · Weighted dips',d:'50kg×3–5 / 40kg×5 / 20kg×5 / BW×AMRAP. Descending load. Full ROM: shoulders below elbows, full lockout. 50kg max-effort top set. BW to failure.'},
+      {n:'C2 · Chin-ups — underhand grip',d:'3–4×AMRAP @ BW. Full dead hang. Friday = underhand grip. Moderate effort.'},
+      {n:'C3 · Cable row — moderate',d:'3×10–12 @ 40kg. Full protraction then retraction. 2s hold at top.'},
+    ]},
+    {hd:'D · Run Prep — Lower Body Mobility Only (done before arms, quality while fresh)',ex:[
+      {n:'D1 · 90/90 hip + hip flexor kneeling stretch',d:'2×45s/side + 2×60s/side. 90/90: passive gravity, hip flexor first, 30s hold at deepest. BW only.'},
+      {n:'D2 · Calf stretch + deep squat pryer + tibialis raise',d:'2×45s/side + 1×60s + 2×20. Gastroc + soleus. Gravity only. Tibialis: heels on step, decelerates. BW only.'},
+      {n:'D3 · Single-leg eccentric calf lower + single-leg balance eyes open',d:'2×10/side · 3s lower + 2×30s steps each. Achilles remodelling night before the long run. BW + light band.'},
+      {n:'D4 · Supine lumbar rotation',d:'60s/side. Lumbar facet decompression before the long run. BW · gravity only.'},
+    ]},
+    {hd:'E · Abs — Biggest Core Day (no lower-body fatigue) — flow, minimal rest',ex:[
+      {n:'E1 · Ab wheel rollout',d:'3×8. Full extension. Low back braced. From knees. Progress to feet when 3×10 from knees solid.'},
+      {n:'E2 · Cable crunch',d:'3×12–15 @ 25kg. Full spinal flexion. Pause 1s at bottom.'},
+      {n:'E3 · Hanging leg raise',d:'3×10–12. Posterior pelvic tilt at top. Control eccentric. BW → ankle DB.'},
+      {n:'E4 · Cable oblique crunch',d:'2×12/side @ 20kg. Cable at high anchor, side-on. Crunch elbow to hip.'},
+      {n:'E5 · Dead bug — BW',d:'3×8/side. 4s extension. Posterior tilt held. 3 sets today vs 2 on other days.'},
+      {n:'E6 · Toes-to-bar progression',d:'2×AMRAP. Dead hang → scapular pull → knees → TTB. Zero momentum.'},
+      {n:'E7 · Plank — feet elevated',d:'2×30–45s. Active shoulder depression. Posterior rib tuck.'},
+    ]},
+    {hd:'F · Arms (incline DB curl / diamond push-up / close-grip bench)',ex:[
+      {n:'F1 · Incline DB curl',d:'3×12 @ 12kg. Arms behind body on incline — max bicep stretch at bottom. Long head = peak builder.'},
+      {n:'F2 · Diamond push-up',d:'2×AMRAP. Hands form diamond. Elbows track back not out. Medial head emphasis.'},
+      {n:'F3 · Close-grip bench',d:'2×10 @ 50kg. Shoulder-width grip. Full ROM. All three tricep heads. Compound finisher.'},
+    ]},
+    {hd:'Pool Finisher · Gym Day · 35 min',ex:[
+      {n:'Passive immersion',d:'3–5 min. Cool water within 15–20 min.'},
+      {n:'Hip CARs in water',d:'3 min. Full circumduction. Buoyancy offloads joints.'},
+      {n:'90/90 in shallows',d:'1–2 min/side. Decompressed hip rotation.'},
+      {n:'Nasal breathing float',d:'2–3 min. 4 in / 4 hold / 6 out. Reset.'},
+    ]},
+  ]},
+  {label:'Sat',key:'d6',title:'VO₂ Block → Zone 2 Long Run',goal:'Distance on feet · post-run recovery · ~3h. Sequence matters: VO₂ block first while glycogen is high and legs fresh. Short transition, then settle into Zone 2 long run. Do NOT reverse the order.',sections:[
+    {hd:'Morning — Optional flush swim only · rest otherwise',ex:[
+      {n:'Arms-only swim + backstroke float + shoulder CARs',d:'10–15 min + 3–5 min + 2 min. No leg. Tissue flush only. Backstroke: passive spinal decompression. Shoulder CARs prime T-spine. Very easy — no effort.'},
+    ]},
+    {hd:'Evening · VO₂ Block → Zone 2 Long Run · A · Warm-up',ex:[
+      {n:'A+B walks + leg swings + progressive strides',d:'5–8 min. A+B walks, leg swings, hip openers. Then 3×30–60m progressive strides to activate fast-twitch.'},
+    ]},
+    {hd:'B · VO₂ Block (hard effort first, transition before long run)',ex:[
+      {n:'B1 · Hard intervals @ 5:35–5:55/km',d:'3×4 min. 90–95% max HR. Should be able to say 2–3 words max. 90s walk recovery between. Keep this block short — you have a long run to follow.'},
+      {n:'B2 · Transition jog',d:'5–10 min easy. Let HR drop below 65% before starting long run. Walk or very easy jog. Do not rush this.'},
+    ]},
+    {hd:'C · Zone 2 Long Run (conversational pace — starts after VO₂ transition)',ex:[
+      {n:'Long run',d:'See monthly progression. Conversational pace. Walk any section freely. Carry fuel past 8km. Pace 8:00–8:15/km. Note: Zone 2 will feel harder than Thursday today because you\'ve already done hard work. Strides every 3–4km at 5:48/km. Distance builds: M1: 10–12km · M2: 12–14 · M3: 14–16 · M4 deload: 10 easy · M5: 16–18 · M6: 18–20 · M7 deload: 12 easy · M8: 20–22km.'},
+      {n:'Post-run: supine lumbar rotation + hip flexor + hamstring + calf',d:'2 min/side + 2×45s each. Most important post-long-run derotation. Do not rush. Then hip flexor, hamstring, calf stretches. BW · gravity only.'},
+      {n:'90/90 PAILs/RAILs on grass + single-leg eccentric calf lower',d:'2 rounds + 3×12/side · 3s lower. Hold → 5s push → 5s lift. Then rise on 5, lift on 5. Highest Achilles load day. BW on grass.'},
+      {n:'Cable crunch',d:'3×12 @ loaded. Kneel at cable, rope at forehead. Crunch contracting abs only. Progressive load every 2 weeks. Recover in 24–48 hrs.'},
+      {n:'Spinal CARs + Hip CARs + body scan breathing',d:'10 min total. Full circumduction each. Then 5 min supine on grass: breathe 360°. Full system downregulation.'},
+    ]},
+    {hd:'Post-Run Pool Recovery · 35 min · longest pool session of the week',ex:[
+      {n:'Arms-only swim',d:'10–15 min. Pull buoy. No leg kick. Not training.'},
+      {n:'Passive immersion',d:'5 min. Cool water. Highest load day.'},
+      {n:'Hip CARs in water',d:'3 min. Buoyancy offloads joints.'},
+      {n:'Leg flush — flutter',d:'3 min. Blood return after long run. No effort.'},
+      {n:'Nasal breathing float',d:'5 min. Longest float. Full parasympathetic reset.'},
+    ]},
+  ]},
+  {label:'Sun',key:'d7',title:'Zone 2 Bike → Upper Pull — Primary',goal:'Non-impact recovery cardio · upper pull primary · lumbar deload (BW only) · leg recovery · ~2h40. Bike non-impact, leaves you loose not tired.',sections:[
+    {hd:'Before Gym · Zone 2 Bike',ex:[
+      {n:'Zone 2 bike',d:'30–40 min. 60–70% max HR, fully conversational. Stationary or road. Stop at 40 min regardless of how you feel. Eat between bike and gym — small protein + carbs. Non-impact, leaves you loose, not tired.'},
+    ]},
+    {hd:'Evening · Gym · 60–90 min after bike · A · Pull / Push / Core + Eccentric Negatives',ex:[
+      {n:'A1 · Chin-ups — overhand grip',d:'4–5×AMRAP @ BW. Full dead hang. Chin over bar. Sunday = overhand grip. Primary pull day.'},
+      {n:'A2 · Push-up AMRAP (superset)',d:'4–5×AMRAP @ BW. Drop straight to push-up immediately after each chin-up set. No rest.'},
+      {n:'A3 · Slow eccentric chin-up negatives',d:'3×3 @ BW. Step or jump to top, lower over exactly 6 seconds to full dead hang. Lat, lower trap, serratus, teres major. Track time-under-tension.'},
+      {n:'A4 · Dead bug — cable',d:'2×8/side. Between chin-up rounds. One arm holds cable, opposite leg extends. Sunday = cable.'},
+    ]},
+    {hd:'B · Horizontal Pull Circuit (barbell row / DB row) — rest 90s between rounds',ex:[
+      {n:'B1 · Barbell row',d:'70/80/65/60kg. Full stretch, full retraction. 80kg peak — drop for volume sets 3–4.'},
+      {n:'B2 · DB row',d:'3×8–10/side @ 40kg. Full protraction then retraction. 2s hold at top. 2s lower. Brace the trunk — resist rotation.'},
+    ]},
+    {hd:'C · Vertical / Upper Pull Circuit (pulldown drop-set / T-bar / high pulls) — flow',ex:[
+      {n:'C1 · Pulldown drop-set',d:'1 long sequence: 100kg bicep pulldown → 80kg explosive → 80kg straight-arm → 100kg standing face pull. Descend in load, increase speed. Minimal rest.'},
+      {n:'C2 · T-bar row',d:'3×8–10 @ 45kg. Full stretch at bottom. Full retraction. Sunday = heavy version.'},
+      {n:'C3 · High pulls',d:'3×6–8 @ 30kg. Drive elbows high. Full upward ROM. Explosive.'},
+    ]},
+    {hd:'D · Lumbar Deload — BW Only (no load on Sunday lumbar — ever)',ex:[
+      {n:'D1 · Back extension — BW only, 3s hold at neutral',d:'2×10 @ BW. Raise to neutral — stop exactly there. Do NOT go past. Motor control without compressive load. BW only · no load ever.'},
+      {n:'D2 · Jefferson curl — BW only',d:'3×5 @ BW · 4s down · 3s hold. One vertebra at a time. 3s hold at full flexion. Best passive tendon + ligament decompression after Saturday\'s long run.'},
+      {n:'D3 · Spinal CARs + child\'s pose arm reach',d:'5 slow circles each direction + 2×30s/side. Full controlled articular rotation. Reach one arm forward, drop chest — full lat + lumbar decompression.'},
+      {n:'D4 · Prone sphinx + T-spine rotation + 90/90 passive hold',d:'2×60s + 5 rotations each side + 2 min/side. Sphinx: breathe 360° 60s. T-spine rotate at T4–T6. 90/90: pure passive decompression, no PAILs.'},
+    ]},
+    {hd:'E · Core + Abs (circuit, minimal rest)',ex:[
+      {n:'E1 · Ab wheel rollout',d:'2–3×6–10. Full extension. Track monthly.'},
+      {n:'E2 · Pallof press — overhead reach',d:'2×10–12/side @ 20kg. Full arm extension overhead — adds serratus + lat. Hardest Pallof variation. Sunday = overhead reach.'},
+      {n:'E3 · Hanging leg raise',d:'3×10. Same as Thursday. Dead hang, raise feet when BW is easy. Add DB between feet.'},
+      {n:'E4 · Toes-to-bar + ring row + suitcase carry + L-sit/hollow body',d:'3 sets: TTB 3×10–12 · ring row · 2×40m/arm suitcase · L-sit increase hold time. TTB zero momentum. Ring row feet elevated. Track monthly.'},
+    ]},
+    {hd:'F · Arms (hammer curl / tricep pushdown — 2 sets only, flush) — superset',ex:[
+      {n:'F1 · Hammer curl',d:'2×12 @ 14kg. 2 sets only. Biceps already heavily loaded through all pulling. Flush only.'},
+      {n:'F2 · Tricep cable pushdown',d:'2×12–15 @ 25kg. 2 sets only. Flush and close the session.'},
+    ]},
+    {hd:'Upper Push — Mobility Only',ex:[
+      {n:'Overhead bench thoracic stretch',d:'2×30s'},
+      {n:'Pec stretch',d:'2×30s/side'},
+      {n:'Tricep overhead stretch',d:'2×30s/side. BW only.'},
+    ]},
+    {hd:'Pool Finisher · Gym Day · 35 min',ex:[
+      {n:'Passive immersion',d:'3–5 min. Cool water within 15–20 min.'},
+      {n:'Hip CARs in water',d:'3 min. Full circumduction. Buoyancy offloads joints.'},
+      {n:'90/90 in shallows',d:'1–2 min/side. Decompressed hip rotation.'},
+      {n:'Nasal breathing float',d:'2–3 min. 4 in / 4 hold / 6 out. Reset.'},
+    ]},
+  ]},
+];
+
+/* ══ STATE ══ */
+const td=()=>new Date().toISOString().slice(0,10);
+function load(){
+  let s=JSON.parse(localStorage.getItem('bdl4')||'{}');
+  if(s.date!==td())s={...s,date:td(),tasks:{},logs:{},journals:{},xpLog:[],allDone:false};
+  s.xp=s.xp||0;s.streak=s.streak||0;s.xpLog=s.xpLog||[];s.earnedBadges=s.earnedBadges||[];
+  s.habitStreaks=s.habitStreaks||{};s.lastDate=s.lastDate||null;s.perf=s.perf||{};
+  s.journals=s.journals||{};s.logs=s.logs||{};s.ringHistory=s.ringHistory||{};
+  if(!s.promptIdx)s.promptIdx={B:0,C:0,D:0,E:0};
+  s.mantraIdx=s.mantraIdx||0;
+  s.sectionPtr=s.sectionPtr||{};s.sectionPtrDate=s.sectionPtrDate||{};
+  return s;
+}
+let S=load();
+function save(){localStorage.setItem('bdl4',JSON.stringify(S));}
+
+(function(){
+  const d=td();
+  if(!S.lastDate){S.streak=1;S.lastDate=d;return;}
+  const diff=Math.round((new Date(d)-new Date(S.lastDate))/86400000);
+  if(diff===1){S.streak++;S.lastDate=d;}else if(diff>1){S.streak=1;S.lastDate=d;}
+})();
+
+function lvl(x){let l=1;while(x>=l*100){x-=l*100;l++;}return l;}
+function xpInLvl(x){let l=1;while(x>=l*100){x-=l*100;l++;}return x;}
+function xpNeeded(x){let l=1;while(x>=l*100){x-=l*100;l++;}return l*100;}
+function addXP(){}
+function removeXP(){}
+
+function renderHeader(){
+  const now=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('mast-date').textContent=`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('mast-time').textContent=now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  renderRings();
+  renderQuote();
+}
+
+function renderQuote(){
+  const el=document.getElementById('daily-quote');if(!el)return;
+  const idx=new Date().getDate()%DAILY_QUOTES.length;
+  el.textContent=DAILY_QUOTES[idx];
+}
+
+function allTasks(){return TASK_STRUCTURE.flatMap(b=>b.tasks.filter(t=>t.type!=='radio'));}
+function allDone(){return allTasks().filter(t=>S.tasks[t.id]).length;}
+function allTotal(){return allTasks().length;}
+function updateTasksSub(){const el=document.getElementById('tasks-sub');if(el)el.textContent=`${allDone()} of ${allTotal()} complete`;}
+
+/* ══ SCROLL PROGRESS ══ */
+window.addEventListener('scroll',()=>{
+  const el=document.getElementById('progress-bar');if(!el)return;
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  el.style.width=(h>0?(window.scrollY/h*100):0)+'%';
+});
+
+/* ══ TASKS ══ */
+function renderTasks(){
+  const root=document.getElementById('tasks-root');root.innerHTML='';
+  TASK_STRUCTURE.forEach(block=>{
+    const allBlockDone=block.tasks.filter(t=>t.type!=='radio').every(t=>S.tasks[t.id]);
+    const bEl=document.createElement('div');bEl.className=`tblock${allBlockDone?' complete':''}`;
+    bEl.innerHTML=`<div class="tblock-label">${block.block}</div>`;
+    block.tasks.forEach(task=>{
+      if(task.type==='radio')bEl.appendChild(buildRadioGroup(task));
+      else bEl.appendChild(buildTaskRow(task));
+    });
+    root.appendChild(bEl);
+  });
+}
+
+function buildRadioGroup(group){
+  const wrap=document.createElement('div');wrap.className='ex-group';
+  wrap.innerHTML=`<span class="ex-group-label">Exercise — choose one</span>`;
+  group.options.forEach(opt=>{
+    const sel=S.tasks[opt.id];
+    const row=document.createElement('div');row.className='ex-option';
+    row.innerHTML=`<div class="ex-radio${sel?' on':''}" id="exr-${opt.id}"></div>
+      <div class="ex-content"><div class="ex-label${sel?' done':''}" id="exl-${opt.id}">${opt.label}</div>${opt.sub?`<div class="ex-sub">${opt.sub}</div>`:''}</div>
+      <div class="ex-xp">+${opt.xp}</div>`;
+    row.onclick=()=>selectExercise(group,opt);
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
+
+function selectExercise(group,chosen){
+  group.options.forEach(opt=>{
+    if(S.tasks[opt.id])removeXP(opt.xp,opt.label);
+    S.tasks[opt.id]=false;
+    const r=document.getElementById('exr-'+opt.id);const l=document.getElementById('exl-'+opt.id);
+    if(r)r.classList.remove('on');if(l)l.classList.remove('done');
+  });
+  S.tasks[chosen.id]=true;addXP(chosen.xp,chosen.label);updateHabitFromTask('exercise',true);
+  const r=document.getElementById('exr-'+chosen.id);const l=document.getElementById('exl-'+chosen.id);
+  if(r)r.classList.add('on');if(l)l.classList.add('done');
+  renderRings();renderWellness();checkBadges();updateTasksSub();renderTasks();save();
+}
+
+function buildTaskRow(task){
+  const done=!!S.tasks[task.id];const wrap=document.createElement('div');
+  const hasExtra=task.subtasks||task.journalKey||task.id==='erp'||task.gymLink||task.sleepLog;
+  const row=document.createElement('div');row.className='task-row';
+  row.innerHTML=`<div class="task-box${done?' done':''}" id="tbox-${task.id}">${done?'✓':''}</div>
+    <div class="task-content"><div class="task-label${done?' done':''}" id="tlbl-${task.id}">${task.label}</div>
+    ${task.logKey?`<div class="inline-log"><label>${task.logLabel||'Log'}:</label><input class="inline-input" id="log-${task.logKey}" value="${S.logs[task.logKey]||''}" placeholder="—" onchange="saveLog('${task.logKey}',this.value)"></div>`:''}</div>
+    <div class="task-right">${hasExtra?`<button class="expand-btn" onclick="toggleExtra('ex-${task.id}',event)">[expand]</button>`:''}</div>`;
+  row.querySelector('.task-box').addEventListener('click',(e)=>{
+    const ripple=document.createElement('div');ripple.className='ripple';
+    row.appendChild(ripple);setTimeout(()=>ripple.remove(),500);
+    toggleTask(task);
+  });
+  wrap.appendChild(row);
+  if(hasExtra){
+    const extra=document.createElement('div');extra.id='ex-'+task.id;extra.style.display='none';
+    if(task.subtasks){
+      const sl=document.createElement('div');sl.className='subtask-list';
+      task.subtasks.forEach(sub=>{
+        const sdone=!!S.tasks[sub.id];const sr=document.createElement('div');sr.className='subtask-item';
+        sr.innerHTML=`<div class="sub-box${sdone?' done':''}" id="sbox-${sub.id}">${sdone?'✓':''}</div><div class="sub-label${sdone?' done':''}" id="slbl-${sub.id}">${sub.label}</div>`;
+        sr.onclick=()=>toggleSub(sub);sl.appendChild(sr);
+      });
+      extra.appendChild(sl);
+    }
+    if(task.sleepLog)extra.appendChild(buildSleepLog(task));
+    else if(task.blueJournal)extra.appendChild(buildBlueJournal(task));
+    else if(task.gymLink){
+      const dowMap={1:'d1',2:'d2',3:'d3',4:'d4',5:'d5',6:'d6',0:'d7'};
+      const todayKey=dowMap[new Date().getDay()];
+      const day=GYM_DAYS.find(d=>d.key===todayKey);
+      const div=document.createElement('div');
+      div.style.cssText='padding:1rem 0';
+      if(!day){div.innerHTML=`<div style="font-family:var(--mono);font-size:.52rem;color:var(--muted)">No programme found for today.</div>`;extra.appendChild(div);return;}
+      div.innerHTML=`
+        <div style="font-family:var(--mono);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem">Today — ${day.label}</div>
+        <div style="font-family:var(--serif);font-size:1.3rem;font-style:italic;margin-bottom:.3rem">${day.title}</div>
+        <div style="font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--rule)">${day.goal}</div>
+        ${day.sections.map(sec=>`
+          <div style="margin-bottom:2rem">
+            <div style="font-family:var(--mono);font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding-bottom:.6rem;border-bottom:1px solid var(--rule);margin-bottom:.6rem">${sec.hd}</div>
+            ${sec.ex.map(ex=>`
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--rule)">
+                <div style="font-family:var(--serif);font-size:1rem">${ex.n}</div>
+                <div style="font-family:var(--mono);font-size:.5rem;color:var(--muted);text-align:right;max-width:200px;padding-left:1rem">${ex.d}</div>
+              </div>`).join('')}
+          </div>`).join('')}
+        <button onclick="openGymPage()" style="font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--ink);color:var(--ink);padding:.5rem 1rem;cursor:pointer;margin-top:.5rem">Print / Save as PDF ↗</button>`;
+      extra.appendChild(div);
+    }
+    else if(task.journalKey)extra.appendChild(buildJournalInline(task));
+    if(task.id==='erp')extra.appendChild(buildERP());
+    wrap.appendChild(extra);
+  }
+  return wrap;
+}
+
+function toggleTask(task){
+  const was=!!S.tasks[task.id];S.tasks[task.id]=!was;
+  if(!was){addXP(task.xp,task.label);updateHabitFromTask(task.habit,true);}
+  else{removeXP(task.xp,task.label);updateHabitFromTask(task.habit,false);}
+  const box=document.getElementById('tbox-'+task.id);const lbl=document.getElementById('tlbl-'+task.id);
+  if(box){box.className='task-box'+(S.tasks[task.id]?' done':'');box.textContent=S.tasks[task.id]?'✓':'';}
+  if(lbl)lbl.className='task-label'+(S.tasks[task.id]?' done':'');
+  renderRings();renderWellness();checkBadges();updateTasksSub();updateFooter();
+  // fade complete blocks
+  document.querySelectorAll('.tblock').forEach(el=>{
+    const label=el.querySelector('.tblock-label');if(!label)return;
+    const block=TASK_STRUCTURE.find(b=>b.block===label.textContent);if(!block)return;
+    const allDoneBlock=block.tasks.filter(t=>t.type!=='radio').every(t=>S.tasks[t.id]);
+    el.classList.toggle('complete',allDoneBlock);
+  });
+  save();
+}
+function toggleSub(sub){
+  S.tasks[sub.id]=!S.tasks[sub.id];
+  const box=document.getElementById('sbox-'+sub.id);const lbl=document.getElementById('slbl-'+sub.id);
+  if(box){box.className='sub-box'+(S.tasks[sub.id]?' done':'');box.textContent=S.tasks[sub.id]?'✓':'';}
+  if(lbl)lbl.className='sub-label'+(S.tasks[sub.id]?' done':'');save();
+}
+function toggleExtra(id,e){if(e)e.stopPropagation();const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function saveLog(key,val){S.logs[key]=val;save();}
+
+/* ══ SLEEP LOG ══ */
+function buildSleepLog(task){
+  const saved=S.journals['sleep-log']||{};
+  const panel=document.createElement('div');panel.className='journal-inline';
+  panel.innerHTML=`
+    <span class="ji-label">Sleep Log</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.2rem">
+      <div><label class="field-lbl">Bedtime (last night)</label>
+        <input class="ji-ta" style="min-height:unset" id="sl-bed" placeholder="e.g. 10:30pm" value="${saved.bed||''}"></div>
+      <div><label class="field-lbl">Wake time</label>
+        <input class="ji-ta" style="min-height:unset" id="sl-wake" placeholder="e.g. 6:15am" value="${saved.wake||''}"></div>
+    </div>
+    <div style="margin-bottom:1.2rem">
+      <label class="field-lbl">Sleep quality — <span id="sl-q-val">${saved.quality||5}</span>/10</label>
+      <input type="range" min="1" max="10" value="${saved.quality||5}" style="-webkit-appearance:none;width:100%;height:1px;background:var(--rule);outline:none;margin:.4rem 0" oninput="document.getElementById('sl-q-val').textContent=this.value">
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:.48rem;color:var(--muted)"><span>Poor</span><span>Great</span></div>
+    </div>
+    <div style="margin-bottom:1.2rem">
+      <label class="field-lbl">HRV (if available)</label>
+      <input class="ji-ta" style="min-height:unset" id="sl-hrv" placeholder="e.g. 52ms" value="${saved.hrv||''}">
+    </div>
+    <div style="margin-bottom:1.2rem">
+      <label class="field-lbl">Notes</label>
+      <textarea class="ji-ta" id="sl-notes" rows="2" placeholder="How did you feel on waking?">${saved.notes||''}</textarea>
+    </div>
+    <div class="btn-row-sm">
+      <button class="ji-btn" onclick="saveSleepLog('${task.id}')">Save</button>
+    </div>`;
+  return panel;
+}
+function saveSleepLog(taskId){
+  const q=document.querySelector(`#ex-${taskId} input[type=range]`);
+  S.journals['sleep-log']={
+    bed:document.getElementById('sl-bed').value,
+    wake:document.getElementById('sl-wake').value,
+    quality:q?q.value:5,
+    hrv:document.getElementById('sl-hrv').value,
+    notes:document.getElementById('sl-notes').value,
+  };
+  const task=TASK_STRUCTURE.flatMap(b=>b.tasks).find(t=>t.id===taskId);
+  if(task&&!S.tasks[taskId]){
+    S.tasks[taskId]=true;
+    const box=document.getElementById('tbox-'+taskId);const lbl=document.getElementById('tlbl-'+taskId);
+    if(box){box.className='task-box done';box.textContent='✓';}if(lbl)lbl.className='task-label done';updateTasksSub();
+  }
+  renderRings();save();toast('Sleep logged');
+}
+
+/* ══ BLUE JOURNAL ══ */
+function buildBlueJournal(task){
+  const jKey=task.journalKey;const isEv=jKey.includes('evening');
+  const moods=isEv?EVENING_MOODS:MORNING_MOODS;const saved=S.journals[jKey]||{};
+  const panel=document.createElement('div');panel.className='journal-inline';
+  const moodDots=moods.map(m=>`<div class="mood-option${saved.mood===m?' on':''}" onclick="selectMood('${jKey}','${m}',this)"><div class="mood-dot${saved.mood===m?' on':''}"></div><span>${m}</span></div>`).join('');
+  panel.innerHTML=`<span class="ji-label">${isEv?'Evening':'Morning'} — Blue Journal</span>
+    <div class="blue-mood-row">${moodDots}</div>
+    ${isEv?`<div class="blue-field"><label class="field-lbl">1 · What went well today?</label><textarea class="ji-ta" id="bj-q1-${jKey}" rows="3">${saved.q1||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">2 · What did I struggle with, and how did I handle it?</label><textarea class="ji-ta" id="bj-q2-${jKey}" rows="3">${saved.q2||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">3 · One thing I'm grateful for from today</label><textarea class="ji-ta" id="bj-q3-${jKey}" rows="2">${saved.q3||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">4 · Did I move toward the person I want to be? How?</label><textarea class="ji-ta" id="bj-q4-${jKey}" rows="3">${saved.q4||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">5 · One thing I'll do better tomorrow</label><textarea class="ji-ta" id="bj-q5-${jKey}" rows="2">${saved.q5||''}</textarea></div>`
+    :`<div class="blue-field"><label class="field-lbl">1 · How did I sleep, and how's my body feeling right now?</label><textarea class="ji-ta" id="bj-q1-${jKey}" rows="3">${saved.q1||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">2 · Three things I'm grateful for</label><textarea class="ji-ta" id="bj-q2-${jKey}" rows="3">${saved.q2||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">3 · My one main focus for today</label><textarea class="ji-ta" id="bj-q3-${jKey}" rows="2">${saved.q3||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">4 · What would make today a good day?</label><textarea class="ji-ta" id="bj-q4-${jKey}" rows="3">${saved.q4||''}</textarea></div>
+      <div class="blue-field"><label class="field-lbl">5 · One affirmation — who am I becoming?</label><textarea class="ji-ta" id="bj-q5-${jKey}" rows="2">${saved.q5||''}</textarea></div>`}
+    <div class="btn-row-sm">
+      <button class="ji-btn" onclick="saveBlueJournal('${jKey}','${task.id}',${isEv})">Save entry</button>
+      <button class="ji-btn ji-btn-ghost" onclick="openBlueA4('${jKey}')">Open A4 ↗</button>
+    </div>`;
+  return panel;
+}
+
+function selectMood(jKey,mood,el){
+  const saved=S.journals[jKey]||{};saved.mood=mood;S.journals[jKey]=saved;
+  el.closest('.blue-mood-row').querySelectorAll('.mood-option').forEach(o=>{o.classList.remove('on');o.querySelector('.mood-dot').classList.remove('on');});
+  el.classList.add('on');el.querySelector('.mood-dot').classList.add('on');save();
+}
+
+function saveBlueJournal(jKey,taskId,isEv){
+  const saved=S.journals[jKey]||{};const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
+  saved.q1=g(`bj-q1-${jKey}`);saved.q2=g(`bj-q2-${jKey}`);saved.q3=g(`bj-q3-${jKey}`);saved.q4=g(`bj-q4-${jKey}`);saved.q5=g(`bj-q5-${jKey}`);
+  S.journals[jKey]=saved;
+  const task=TASK_STRUCTURE.flatMap(b=>b.tasks).find(t=>t.id===taskId);
+  if(task&&!S.tasks[taskId]){
+    S.tasks[taskId]=true;addXP(task.xp,task.label);updateHabitFromTask(task.habit,true);
+    const box=document.getElementById('tbox-'+taskId);const lbl=document.getElementById('tlbl-'+taskId);
+    if(box){box.className='task-box done';box.textContent='✓';}if(lbl)lbl.className='task-label done';updateTasksSub();
+  }
+  renderRings();renderJournal();save();toast('Blue Journal saved');
+}
+
+function openBlueA4(jKey){
+  const isEv=jKey.includes('evening');const saved=S.journals[jKey]||{};
+  const moods=isEv?EVENING_MOODS:MORNING_MOODS;const w=window.open('','_blank');
+  const circles=moods.map(m=>`<div style="display:inline-flex;align-items:center;gap:.4rem;margin-right:1.2rem"><div style="width:11px;height:11px;border:1px solid #111;border-radius:50%;background:${saved.mood===m?'#111':'transparent'}"></div><span style="font-family:'Space Mono',monospace;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em">${m}</span></div>`).join('');
+  const quote=isEv?'"The biggest adventure by far is simply being happy."':'"The secret of attraction is to love yourself." — Deepak Chopra';
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#f2ede4;color:#111;font-family:'EB Garamond',serif;max-width:680px;margin:4rem auto;padding:3rem;line-height:1.9}.page-border{border:1px solid #ccc8bf;padding:2.5rem}.quote{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;color:#88887a;margin-bottom:2rem;text-align:center}.field-label{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:#88887a;margin-bottom:.6rem;display:block;margin-top:1.5rem}.line{border-bottom:1px solid #ccc8bf;height:2rem}.mood-row{display:flex;flex-wrap:wrap;gap:.3rem;margin:.6rem 0 1.5rem}.btn{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;background:#111;color:#f2ede4;border:none;padding:.6rem 1.3rem;cursor:pointer;margin-top:2rem}</style></head><body>
+  <div class="page-border"><div class="quote">${quote}</div>
+  <span class="field-label">${isEv?'My Evening Mood':'My Morning Mood'} — please circle</span>
+  <div class="mood-row">${circles}</div>
+  ${isEv?`<span class="field-label">1 · What went well today?</span>${[...Array(3)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">2 · What did I struggle with, and how did I handle it?</span>${[...Array(3)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">3 · One thing I'm grateful for from today</span>${[...Array(2)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">4 · Did I move toward the person I want to be? How?</span>${[...Array(3)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">5 · One thing I'll do better tomorrow</span>${[...Array(2)].map(()=>'<div class="line"></div>').join('')}`:`<span class="field-label">1 · How did I sleep, and how's my body feeling right now?</span>${[...Array(3)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">2 · Three things I'm grateful for</span>${[...Array(3)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">3 · My one main focus for today</span>${[...Array(2)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">4 · What would make today a good day?</span>${[...Array(3)].map(()=>'<div class="line"></div>').join('')}<span class="field-label">5 · One affirmation — who am I becoming?</span>${[...Array(2)].map(()=>'<div class="line"></div>').join('')}`}
+  </div><button class="btn" onclick="window.print()">Print / Save as PDF</button></body></html>`);
+}
+
+/* ══ IN DEPTH JOURNAL — one section per day, auto-advancing, all prompts stacked ══ */
+function getTodayTheme(){return ANCHOR_THEMES[new Date().getDay()];}
+function jdStore(jKey){if(!S.journals[jKey]||typeof S.journals[jKey]!=='object'||Array.isArray(S.journals[jKey]))S.journals[jKey]={};return S.journals[jKey];}
+function mantraLine(){
+  const i=(S.mantraIdx||0)%MANTRAS.length;
+  return `<div class="jd-mantra"><span class="jd-mantra-label">Close with —</span>
+    <span class="jd-mantra-text">${MANTRAS[i]}</span>
+    <button class="ji-btn ji-btn-ghost" onclick="cycleMantra(this)" style="font-size:.46rem;margin-top:.4rem">Next mantra ↻</button></div>`;
+}
+function cycleMantra(btn){
+  S.mantraIdx=((S.mantraIdx||0)+1)%MANTRAS.length;save();
+  const wrap=btn.closest('.jd-mantra');const t=wrap.querySelector('.jd-mantra-text');if(t)t.textContent=MANTRAS[S.mantraIdx];
+}
+/* Returns the section index for a category today, advancing once per day on first open. */
+function jdSectionIndex(code,sectionCount){
+  if(!S.sectionPtr)S.sectionPtr={};
+  if(!S.sectionPtrDate)S.sectionPtrDate={};
+  const today=td();
+  if(S.sectionPtrDate[code]!==today){
+    // advance to next section (first ever lands on 0)
+    if(S.sectionPtr[code]===undefined){S.sectionPtr[code]=0;}
+    else{S.sectionPtr[code]=(S.sectionPtr[code]+1)%sectionCount;}
+    S.sectionPtrDate[code]=today;save();
+  }
+  return S.sectionPtr[code]%sectionCount;
+}
+function buildJournalInline(task){
+  const jKey=task.journalKey;
+  const panel=document.createElement('div');panel.className='journal-inline';panel.id='jd-root-'+jKey;
+  renderJDSection(panel,jKey,task);
+  return panel;
+}
+function renderJDSection(panel,jKey,task){
+  const theme=getTodayTheme();const code=theme.code;const sections=THEME_SECTIONS[code]||[];
+  if(!sections.length){panel.innerHTML=`<span class="ji-label">${task.label}</span><div class="ji-theme">${theme.name}</div><div class="j-entry-empty">No section configured for today.</div>`;return;}
+  const si=jdSectionIndex(code,sections.length);
+  const s=sections[si];const store=jdStore(jKey);const ans=store[s.label]||[];
+  const fields=s.prompts.map((p,i)=>`
+    <div class="jd-field">
+      <div class="jd-prompt">${p}</div>
+      <textarea class="ji-ta" id="jd-${jKey}-${i}" rows="3" placeholder="Write freely…">${ans[i]||''}</textarea>
+    </div>`).join('');
+  panel.innerHTML=`<span class="ji-label">${task.label}</span>
+    <div class="ji-theme">${theme.name} — ${theme.desc}</div>
+    <div class="jd-section-hd">${s.label}<span class="jd-section-count">${si+1} of ${sections.length}</span></div>
+    ${fields}
+    <div class="btn-row-sm" style="margin-top:.4rem">
+      <button class="ji-btn" onclick="jdSaveSection('${jKey}','${task.id}')">Save entry</button>
+      <button class="ji-btn ji-btn-ghost" onclick="openA4('${jKey}')">Open A4 ↗</button>
+    </div>
+    ${mantraLine()}`;
+}
+function jdSaveSection(jKey,taskId){
+  const theme=getTodayTheme();const sections=THEME_SECTIONS[theme.code]||[];if(!sections.length)return;
+  const si=jdSectionIndex(theme.code,sections.length);const s=sections[si];
+  const store=jdStore(jKey);store[s.label]=s.prompts.map((p,i)=>{const ta=document.getElementById(`jd-${jKey}-${i}`);return ta?ta.value:'';});
+  const task=TASK_STRUCTURE.flatMap(b=>b.tasks).find(t=>t.id===taskId);
+  const hasContent=store[s.label].some(v=>v&&v.trim());
+  if(task&&hasContent&&!S.tasks[taskId]){
+    S.tasks[taskId]=true;updateHabitFromTask(task.habit,true);
+    const box=document.getElementById('tbox-'+taskId);const lbl=document.getElementById('tlbl-'+taskId);
+    if(box){box.className='task-box done';box.textContent='✓';}if(lbl)lbl.className='task-label done';
+    updateTasksSub();renderRings();
+  }
+  save();renderJournal();toast('In Depth entry saved');
+}
+function openA4(jKey){
+  const theme=getTodayTheme();const sections=THEME_SECTIONS[theme.code]||[];if(!sections.length)return;
+  const si=jdSectionIndex(theme.code,sections.length);const s=sections[si];
+  const store=jdStore(jKey);const ans=store[s.label]||[];
+  const labels={'indepth-am':'Morning In Depth Journal','indepth-pm':'Afternoon In Depth Journal','indepth-evening':'Evening In Depth Journal'};
+  const items=s.prompts.map((p,i)=>`<li>${p}${ans[i]&&ans[i].trim()?`<div class="ans">${ans[i].replace(/</g,'&lt;')}</div>`:''}</li>`).join('');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>body{background:#f2ede4;color:#111;font-family:'EB Garamond',serif;max-width:680px;margin:5rem auto;padding:3rem;line-height:1.9}h1{font-size:2.8rem;font-weight:400;font-style:italic;margin-bottom:.3rem}h2{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#888;margin:2rem 0 .5rem;font-weight:400}.anchor{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#888;margin-bottom:.5rem;display:block}.theme-desc{font-style:italic;color:#888;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid #ccc}.prompts{list-style:none;padding:0}.prompts li{font-style:italic;color:#555;padding:.5rem 0;border-bottom:1px solid #e0dbd2}.ans{font-style:normal;color:#111;font-size:1.05rem;margin-top:.4rem;white-space:pre-wrap}.btn{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:#111;color:#f2ede4;border:none;padding:.6rem 1.3rem;cursor:pointer;margin-top:1.5rem}@media print{.btn{display:none}}</style></head><body>
+  <span class="anchor">Anchor — ${theme.name}</span><h1>${labels[jKey]||'Journal'}</h1>
+  <div class="theme-desc">${theme.desc}</div>
+  <h2>${s.label}</h2><ul class="prompts">${items}</ul>
+  <button class="btn" onclick="window.print()">Print / Save as PDF</button></body></html>`);
+}
+/* ══ Core Mind ERP — pick a sub-list, work the whole sequence one prompt at a time ══ */
+let CM_STATE={list:null,idx:0};
+function buildERP(){
+  const panel=document.createElement('div');panel.className='erp-panel';panel.id='erp-panel-root';
+  CM_STATE={list:null,idx:0};
+  renderCoreMindMenu(panel);
+  return panel;
+}
+function renderCoreMindMenu(panel){
+  const store=S.journals['coremind']||{};
+  const menu=CORE_MIND.map((s,i)=>{
+    const ans=store[s.label]||[];
+    const done=ans.filter(a=>a&&a.trim()).length;
+    const tag=done>0?`<span style="font-family:var(--mono);font-size:.5rem;color:var(--ink)">${done}/${s.prompts.length}</span>`:`<span style="font-family:var(--mono);font-size:.5rem;color:var(--muted)">${s.prompts.length}</span>`;
+    return `<button class="cm-menu-item" onclick="cmOpen(${i})">
+      <span>${s.label}</span>${tag}</button>`;
+  }).join('');
+  panel.innerHTML=`<div style="font-family:var(--mono);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem">Core Mind — work through an issue</div>
+    <div style="font-family:var(--serif);font-size:.85rem;color:var(--muted);margin-bottom:1rem;line-height:1.5">Pick one set and work the whole sequence in a single sitting — the prompts build on each other so you can move through the issue start to finish.</div>
+    <div class="cm-menu">${menu}</div>`;
+}
+function cmOpen(i){CM_STATE={list:i,idx:0};renderCoreMindStep();}
+function renderCoreMindStep(){
+  const panel=document.getElementById('erp-panel-root');if(!panel)return;
+  const s=CORE_MIND[CM_STATE.list];const n=s.prompts.length;const i=CM_STATE.idx;
+  const store=S.journals['coremind']||{};const ans=store[s.label]||[];
+  panel.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+      <span style="font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)">${s.label}</span>
+      <button class="ji-btn ji-btn-ghost" onclick="cmMenu()" style="font-size:.5rem">← All sets</button></div>
+    <div style="font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-bottom:.5rem">Prompt ${i+1} of ${n}</div>
+    <div class="cm-progress"><div class="cm-progress-bar" style="width:${((i+1)/n)*100}%"></div></div>
+    <div style="font-family:var(--serif);font-size:1.05rem;color:var(--ink);line-height:1.5;margin:1rem 0 .6rem">${s.prompts[i]}</div>
+    <textarea class="ji-ta" id="cm-answer" rows="5" placeholder="Write freely…">${ans[i]||''}</textarea>
+    <div class="btn-row-sm" style="margin-top:.7rem">
+      <button class="ji-btn ji-btn-ghost" onclick="cmNav(-1)" ${i===0?'disabled style="opacity:.4"':''}>← Back</button>
+      ${i<n-1?`<button class="ji-btn" onclick="cmNav(1)">Save &amp; Next →</button>`:`<button class="ji-btn" onclick="cmFinish()">Save &amp; Finish ✓</button>`}
+    </div>`;
+}
+function cmSaveCurrent(){
+  const s=CORE_MIND[CM_STATE.list];const ta=document.getElementById('cm-answer');if(!ta)return;
+  if(!S.journals['coremind'])S.journals['coremind']={};
+  if(!S.journals['coremind'][s.label])S.journals['coremind'][s.label]=[];
+  S.journals['coremind'][s.label][CM_STATE.idx]=ta.value;save();
+}
+function cmNav(dir){cmSaveCurrent();CM_STATE.idx+=dir;renderCoreMindStep();}
+function cmMenu(){cmSaveCurrent();const p=document.getElementById('erp-panel-root');if(p)renderCoreMindMenu(p);renderJournal();}
+function cmFinish(){
+  cmSaveCurrent();
+  if(!S.tasks['erp']){
+    S.tasks['erp']=true;updateHabitFromTask('erp',true);
+    const box=document.getElementById('tbox-erp');const lbl=document.getElementById('tlbl-erp');
+    if(box){box.className='task-box done';box.textContent='✓';}if(lbl)lbl.className='task-label done';
+    updateTasksSub();renderRings();
+  }
+  const p=document.getElementById('erp-panel-root');if(p)renderCoreMindMenu(p);
+  toast('Core Mind session saved');renderJournal();
+}
+
+/* ══ WELLNESS ══ */
+function updateHabitFromTask(habitId,checked){
+  if(!habitId)return;const hDef=HABIT_MAP.find(h=>h.id===habitId);if(!hDef)return;
+  const anyDone=hDef.taskIds.some(id=>S.tasks[id]);const was=!!S.habitStreaks[habitId+'_today'];
+  if(anyDone&&!was){S.habitStreaks[habitId+'_today']=true;S.habitStreaks[habitId]=(S.habitStreaks[habitId]||0)+1;}
+  else if(!anyDone&&was){S.habitStreaks[habitId+'_today']=false;S.habitStreaks[habitId]=Math.max(0,(S.habitStreaks[habitId]||0)-1);}
+}
+function renderWellness(){
+  const root=document.getElementById('wellness-root');root.innerHTML='';
+  HABIT_MAP.forEach(h=>{
+    const streak=S.habitStreaks[h.id]||0;const todayOn=h.taskIds.some(id=>S.tasks[id]);
+    const row=document.createElement('div');row.className='habit-row';
+    let dots='';for(let i=6;i>=0;i--){const isToday=i===0;const filled=isToday?todayOn:(i<streak&&streak>0);dots+=`<div class="dot${filled?' on':''} ${isToday?'today':''}"></div>`;}
+    row.innerHTML=`<div class="habit-name">${h.name}</div><div class="habit-right"><div class="dot-strip">${dots}</div><div class="streak-num">${streak}d</div></div>`;
+    root.appendChild(row);
+  });
+}
+
+/* ══ GYM ══ */
+function renderGym(){
+  const tabsEl=document.getElementById('gym-tabs');const panelsEl=document.getElementById('gym-panels');
+  if(tabsEl.children.length)return;
+  const dowMap={1:'d1',2:'d2',3:'d3',4:'d4',5:'d5',6:'d6',0:'d7'};
+  const todayKey=dowMap[new Date().getDay()];
+  GYM_DAYS.forEach(day=>{
+    const isOn=day.key===todayKey;
+    const tab=document.createElement('button');tab.className=`gtab${isOn?' on':''}`;tab.textContent=day.label;
+    tab.onclick=()=>{document.querySelectorAll('.gtab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.gpanel').forEach(p=>p.classList.remove('on'));tab.classList.add('on');document.getElementById('gp-'+day.key).classList.add('on');};
+    tabsEl.appendChild(tab);
+    const panel=document.createElement('div');panel.className=`gpanel${isOn?' on':''}`;panel.id='gp-'+day.key;
+    panel.innerHTML=`<div class="gym-day-title">${day.title}</div><div class="gym-day-goal">${day.goal}</div>`;
+    day.sections.forEach(sec=>{
+      const hd=document.createElement('div');hd.className='gym-section-hd';hd.textContent=sec.hd;panel.appendChild(hd);
+      sec.ex.forEach(ex=>{const r=document.createElement('div');r.className='gym-row';r.innerHTML=`<div class="gym-ex">${ex.n}</div><div class="gym-det">${ex.d}</div>`;panel.appendChild(r);});
+    });
+    panelsEl.appendChild(panel);
+  });
+}
+
+/* ══ JOURNAL VIEW ══ */
+function renderJournal(){
+  const root=document.getElementById('journal-root');root.innerHTML='';
+  const theme=getTodayTheme();
+  const banner=document.createElement('div');
+  banner.style.cssText='margin-bottom:3rem;padding:1.5rem;border:1px solid var(--rule)';
+  banner.innerHTML=`<div style="font-family:var(--mono);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem">Today's Anchor Theme</div>
+    <div style="font-family:var(--serif);font-size:1.5rem;font-style:italic">${theme.name}</div>
+    <div style="font-family:var(--mono);font-size:.52rem;color:var(--muted);margin-top:.3rem">${theme.desc}</div>`;
+  root.appendChild(banner);
+  [{key:'am',label:'Blue Journal — Morning',blue:true,ev:false},{key:'indepth-am',label:'In Depth Journal — Morning'},{key:'indepth-pm',label:'In Depth Journal — Afternoon',jd:true},{key:'evening',label:'Blue Journal — Evening',blue:true,ev:true},{key:'indepth-evening',label:'In Depth Journal — Evening',jd:true},{key:'coremind',label:'Core Mind / ERP Work',cm:true}].forEach(s=>{
+    const text=s.cm?(()=>{const d=S.journals['coremind']||{};const p=[];CORE_MIND.forEach(sub=>{const a=(d[sub.label]||[]).filter(x=>x&&x.trim());if(a.length){p.push(`${sub.label} (${a.length}/${sub.prompts.length})`);}});return p.join('\n');})():s.jd?(()=>{const d=S.journals[s.key];if(!d||typeof d!=='object')return d||'';const p=[];Object.keys(d).forEach(label=>{const a=(d[label]||[]).filter(x=>x&&x.trim());if(a.length)p.push(`${label} — ${a.length} answered`);});return p.join('\n');})():s.blue?(()=>{const d=S.journals[s.key]||{};const qs=s.ev?['What went well','Struggled with','Grateful for','Moved toward who I want to be','Better tomorrow']:['Sleep & body','Grateful for','Main focus','Good day looks like','Affirmation'];const p=[];if(d.mood)p.push(`Mood: ${d.mood}`);[d.q1,d.q2,d.q3,d.q4,d.q5].forEach((v,i)=>{if(v)p.push(`${qs[i]}: ${v}`);});return p.join('\n');})():S.journals[s.key]||'';
+    const depth=S.journals[s.key+'Depth'];
+    const sec=document.createElement('div');sec.className='j-entry-block';
+    sec.innerHTML=`<div class="j-entry-hd">${s.label}</div>${text?`<div class="j-entry-text">${text}</div>${depth?`<div class="j-depth-tag">Depth: ${depth}/10</div>`:''}`:`<div class="j-entry-empty">No entry yet — write in Daily Tasks above.</div>`}`;
+    root.appendChild(sec);
+  });
+}
+
+/* ══ STRAVA ══ */
+const STRAVA_CLIENT_ID='228279';
+const STRAVA_CLIENT_SECRET='b22a69721b42bd19bdb1712c03c08b5cd3fc2d36';
+const STRAVA_REDIRECT='https://wibberley18.github.io/Dashboard';
+const STRAVA_SCOPE='read,activity:read_all';
+function stravaAuthURL(){return `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT)}&approval_prompt=auto&scope=${STRAVA_SCOPE}`;}
+async function stravaExchange(code){const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:STRAVA_CLIENT_ID,client_secret:STRAVA_CLIENT_SECRET,code,grant_type:'authorization_code'})});return r.json();}
+async function stravaRefresh(rt){const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:STRAVA_CLIENT_ID,client_secret:STRAVA_CLIENT_SECRET,refresh_token:rt,grant_type:'refresh_token'})});return r.json();}
+async function stravaActivities(at){const r=await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=1',{headers:{Authorization:`Bearer ${at}`}});return r.json();}
+async function stravaAthlete(at){const r=await fetch('https://www.strava.com/api/v3/athlete',{headers:{Authorization:`Bearer ${at}`}});return r.json();}
+function mToKm(m){return(m/1000).toFixed(2);}
+function secToPace(s,m){if(!m)return'—';const p=s/m*1000;const mm=Math.floor(p/60);const ss=Math.round(p%60);return`${mm}:${ss.toString().padStart(2,'0')}`;}
+function secToTime(s){const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);const ss=s%60;return h?`${h}:${m.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`:`${m}:${ss.toString().padStart(2,'0')}`;}
+async function initStrava(){
+  const el=document.getElementById('strava-section');if(!el)return;
+  const params=new URLSearchParams(window.location.search);const code=params.get('code');
+  if(code){
+    el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Connecting to Strava…</div>`;
+    try{const data=await stravaExchange(code);if(data.access_token){S.stravaToken={access:data.access_token,refresh:data.refresh_token,expires:data.expires_at};save();window.history.replaceState({},'',window.location.pathname);await loadStravaData();}else{el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Auth failed</div>`;}}catch(e){el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Connection error</div>`;}
+    return;
+  }
+  if(S.stravaToken){
+    if(Date.now()/1000>S.stravaToken.expires-300){try{const data=await stravaRefresh(S.stravaToken.refresh);if(data.access_token){S.stravaToken={access:data.access_token,refresh:data.refresh_token,expires:data.expires_at};save();}}catch(e){}}
+    await loadStravaData();return;
+  }
+  el.innerHTML=`<div style="margin-bottom:1.5rem"><div class="cs-label" style="margin-bottom:.3rem">Strava</div>
+    <div class="cs-sub" style="margin-bottom:1rem">Connect to auto-fill your latest activity</div>
+    <button class="strava-btn" onclick="window.location.href='${stravaAuthURL()}'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+      Connect Strava</button></div>`;
+}
+async function loadStravaData(){
+  const el=document.getElementById('strava-section');if(!el||!S.stravaToken)return;
+  el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Loading Strava data…</div>`;
+  try{
+    const[acts,ath]=await Promise.all([stravaActivities(S.stravaToken.access),stravaAthlete(S.stravaToken.access)]);
+    const a=acts[0];
+    if(!a){el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Connected as ${ath.firstname} ${ath.lastname} · No recent activities</div>`;return;}
+    const dist=mToKm(a.distance),pace=secToPace(a.moving_time,a.distance),time=secToTime(a.moving_time),hr=a.average_heartrate?Math.round(a.average_heartrate):'—',elev=a.total_elevation_gain?`${Math.round(a.total_elevation_gain)}m`:'—',date=new Date(a.start_date_local).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+    S.perf['p-dist']=`${dist} km`;S.perf['p-time']=time;S.perf['p-pace']=`${pace} /km`;if(hr!=='—')S.perf['p-hr']=`${hr} bpm`;save();renderPerf();
+    el.innerHTML=`<div style="margin-bottom:1.5rem"><div class="cs-label" style="margin-bottom:.3rem">Strava — <span style="color:var(--ink)">${ath.firstname} ${ath.lastname}</span></div>
+      <div class="strava-activity-name">${a.name} · ${date}</div>
+      <div class="strava-data-grid">
+        <div><div class="strava-stat-label">Distance</div><div class="strava-stat-val">${dist}<span style="font-size:1rem"> km</span></div></div>
+        <div><div class="strava-stat-label">Time</div><div class="strava-stat-val" style="font-size:1.3rem">${time}</div></div>
+        <div><div class="strava-stat-label">Pace</div><div class="strava-stat-val" style="font-size:1.3rem">${pace}<span style="font-size:.9rem"> /km</span></div></div>
+        <div><div class="strava-stat-label">Avg HR</div><div class="strava-stat-val">${hr}${hr!=='—'?'<span style="font-size:1rem"> bpm</span>':''}</div></div>
+        <div><div class="strava-stat-label">Elevation</div><div class="strava-stat-val" style="font-size:1.3rem">${elev}</div></div>
+        <div><div class="strava-stat-label">Type</div><div class="strava-stat-val" style="font-size:1.1rem;font-style:italic">${a.sport_type||a.type||'—'}</div></div>
+      </div>
+      <button class="btn-line" onclick="loadStravaData()">Refresh</button>&nbsp;&nbsp;
+      <button class="btn-line" onclick="disconnectStrava()">Disconnect</button></div>`;
+  }catch(e){el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Error — <button class="btn-line" onclick="initStrava()">Retry</button></div>`;}
+}
+function disconnectStrava(){delete S.stravaToken;save();initStrava();}
+
+/* ══ PERFORMANCE ══ */
+function renderPerf(){
+  const grid=document.getElementById('perf-grid');if(!grid)return;grid.innerHTML='';
+  PERF_FIELDS.forEach(f=>{
+    const card=document.createElement('div');card.className='perf-card';
+    card.innerHTML=`<div class="perf-card-label">${f.label}</div><input class="perf-input-val" id="${f.id}" value="${S.perf[f.id]||''}" placeholder="${f.placeholder}">`;
+    grid.appendChild(card);
+  });
+}
+function savePerf(){PERF_FIELDS.forEach(f=>{const el=document.getElementById(f.id);if(el)S.perf[f.id]=el.value;});save();toast('Performance saved');}
+
+/* ══ XP — removed ══ */
+function renderXP(){}
+function checkBadges(){}
+
+/* ══ DATA I/O ══ */
+function exportData(){const ta=document.getElementById('export-ta');ta.style.display='block';ta.value=JSON.stringify(S,null,2);ta.select();toast('JSON ready — copy below');}
+function toggleImport(){const w=document.getElementById('import-wrap');w.style.display=w.style.display==='none'?'block':'none';}
+function importData(){try{const p=JSON.parse(document.getElementById('import-ta').value.trim());localStorage.setItem('bdl4',JSON.stringify(p));toast('Imported — reloading…');setTimeout(()=>location.reload(),800);}catch(e){toast('Invalid JSON');}}
+
+function openGymPage(){
+  const dowMap={1:'d1',2:'d2',3:'d3',4:'d4',5:'d5',6:'d6',0:'d7'};
+  const todayKey=dowMap[new Date().getDay()];
+  const day=GYM_DAYS.find(d=>d.key===todayKey);
+  if(!day)return;
+  const now=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dateStr=`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  const sectionsHTML=day.sections.map(sec=>`
+    <div style="margin-bottom:2.5rem">
+      <div style="font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:#88887a;padding-bottom:.8rem;border-bottom:1px solid #ccc8bf;margin-bottom:.8rem">${sec.hd}</div>
+      ${sec.ex.map(ex=>`
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:.7rem 0;border-bottom:1px solid #e8e3da">
+          <div style="font-family:'EB Garamond',serif;font-size:1.05rem">${ex.n}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:.55rem;color:#88887a;text-align:right;max-width:180px">${ex.d}</div>
+        </div>`).join('')}
+    </div>`).join('');
+
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>${day.title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{background:#f2ede4;color:#111;font-family:'EB Garamond',serif;line-height:1.7;min-height:100vh}
+      .page{max-width:720px;margin:0 auto;padding:4rem 3rem 6rem}
+      .eyebrow{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:#88887a;margin-bottom:1rem}
+      .title{font-family:'EB Garamond',serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:400;font-style:italic;letter-spacing:-.02em;line-height:.95;margin-bottom:1rem}
+      .goal{font-family:'Space Mono',monospace;font-size:.55rem;color:#88887a;letter-spacing:.1em;margin-bottom:3rem;padding-bottom:2rem;border-bottom:1px solid #111}
+      .print-btn{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;background:#111;color:#f2ede4;border:none;padding:.6rem 1.3rem;cursor:pointer;margin-top:3rem;transition:opacity .2s}
+      .print-btn:hover{opacity:.75}
+      /* checklist style for printing */
+      .check-row{display:flex;align-items:baseline;gap:.8rem}
+      .check-box{width:10px;height:10px;border:1px solid #ccc;flex-shrink:0;margin-top:3px;display:inline-block}
+      @media print{
+        body{background:#fff}
+        .print-btn{display:none}
+      }
+    </style>
+  </head><body>
+  <div class="page">
+    <div class="eyebrow">Brian's Daily Log · ${dateStr}</div>
+    <h1 class="title">${day.title}</h1>
+    <div class="goal">${day.goal}</div>
+    ${sectionsHTML}
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  </body></html>`);
+  w.document.close();
+}
+
+function openGymSection(){
+  const chapters=document.querySelectorAll('.ch-trigger');
+  chapters.forEach(btn=>{
+    const num=btn.querySelector('.ch-num');
+    if(num&&num.textContent.includes('Movement')){
+      if(btn.getAttribute('aria-expanded')!=='true'){
+        btn.setAttribute('aria-expanded','true');
+        btn.nextElementSibling.classList.add('open');
+      }
+      // activate today's tab
+      const dowMap={1:'d1',2:'d2',3:'d3',4:'d4',5:'d5',6:'d6',0:'d7'};
+      const todayKey=dowMap[new Date().getDay()];
+      document.querySelectorAll('.gtab').forEach(t=>t.classList.remove('on'));
+      document.querySelectorAll('.gpanel').forEach(p=>p.classList.remove('on'));
+      const todayTab=document.querySelector(`.gtab`);
+      // find the right tab by matching panel
+      const panel=document.getElementById('gp-'+todayKey);
+      if(panel){
+        panel.classList.add('on');
+        // find matching tab
+        document.querySelectorAll('.gtab').forEach((t,i)=>{
+          if(GYM_DAYS[i]&&GYM_DAYS[i].key===todayKey)t.classList.add('on');
+        });
+      }
+      setTimeout(()=>btn.scrollIntoView({behavior:'smooth',block:'start'}),150);
+    }
+  });
+}
+
+/* ══ GATE ══ */
+function initGate(){
+  // If already completed today's gate, skip
+  if(S.gateCompletedDate===td()){
+    document.getElementById('gate-overlay').style.display='none';
+    return;
+  }
+  // Populate date subtitle
+  const now=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const el=document.getElementById('gate-date-sub');
+  if(el)el.textContent=`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  // Populate in-depth: today's single section
+  const theme=getTodayTheme();const code=theme.code;
+  const sections=THEME_SECTIONS[code]||[];
+  const si=sections.length?jdSectionIndex(code,sections.length):0;
+  const sec=sections[si];
+  const tl=document.getElementById('g-theme-label');if(tl)tl.textContent=`${theme.name} — ${theme.desc}`;
+  const sl=document.getElementById('g-sections');if(sl&&sec)sl.innerHTML=`<b style="color:var(--ink)">${sec.label}</b> · ${si+1} of ${sections.length}`;
+  const pl=document.getElementById('g-prompt');if(pl&&sec)pl.innerHTML=sec.prompts.map(p=>`• ${p}`).join('<br>');
+  // Populate mood row
+  const mr=document.getElementById('g-mood-row');
+  if(mr){mr.innerHTML='';MORNING_MOODS.forEach(m=>{const d=document.createElement('div');d.className='mood-option';d.innerHTML=`<div class="mood-dot"></div><span>${m}</span>`;d.onclick=()=>{mr.querySelectorAll('.mood-option').forEach(o=>{o.classList.remove('on');o.querySelector('.mood-dot').classList.remove('on');});d.classList.add('on');d.querySelector('.mood-dot').classList.add('on');gateCheck();};mr.appendChild(d);});}
+  // Restore saved gate data
+  const gs=S.gateState||{};
+  ['g-bed','g-wake','g-hrv','g-q1','g-q2','g-q3','g-q4','g-q5','g-indepth'].forEach(id=>{const el=document.getElementById(id);if(el&&gs[id])el.value=gs[id];});
+  gateCheck();
+}
+
+function gateCheck(){
+  // Progress pips: pip0=sleep, pip1=blue journal, pip2=in depth
+  const bed=document.getElementById('g-bed');const wake=document.getElementById('g-wake');
+  const pip0=document.getElementById('gpip-0');
+  if(pip0)pip0.classList.toggle('on',!!(bed&&bed.value&&wake&&wake.value));
+  const grateful=document.getElementById('g-q2');const focus1=document.getElementById('g-q3');
+  const pip1=document.getElementById('gpip-1');
+  if(pip1)pip1.classList.toggle('on',!!((grateful&&grateful.value)||(focus1&&focus1.value)));
+  const indepth=document.getElementById('g-indepth');
+  const pip2=document.getElementById('gpip-2');
+  if(pip2)pip2.classList.toggle('on',!!(indepth&&indepth.value&&indepth.value.length>20));
+  // Enable unlock button when at least 2 pips on
+  const pipsOn=[pip0,pip1,pip2].filter(p=>p&&p.classList.contains('on')).length;
+  const btn=document.getElementById('gate-unlock-btn');
+  if(btn)btn.classList.toggle('ready',pipsOn>=1);
+}
+
+function gateNextPrompt(){}
+
+function unlockDashboard(){
+  // Persist gate data into state
+  const gs={};
+  ['g-bed','g-wake','g-hrv','g-q1','g-q2','g-q3','g-q4','g-q5','g-indepth'].forEach(id=>{const el=document.getElementById(id);if(el)gs[id]=el.value;});
+  S.gateState=gs;
+  // Save sleep log
+  const slQ=document.querySelector('#gate-overlay input[type=range]');
+  S.journals['sleep-log']={bed:gs['g-bed']||'',wake:gs['g-wake']||'',quality:slQ?slQ.value:5,hrv:gs['g-hrv']||'',notes:''};
+  if(gs['g-bed']&&gs['g-wake']&&!S.tasks['sleep-log']){
+    S.tasks['sleep-log']=true;
+    const box=document.getElementById('tbox-sleep-log');const lbl=document.getElementById('tlbl-sleep-log');
+    if(box){box.className='task-box done';box.textContent='✓';}if(lbl)lbl.className='task-label done';
+  }
+  // Save morning blue journal
+  const mr=document.getElementById('g-mood-row');
+  const moodOn=mr?mr.querySelector('.mood-option.on'):null;
+  S.journals['am']={mood:moodOn?moodOn.querySelector('span').textContent:'',q1:gs['g-q1']||'',q2:gs['g-q2']||'',q3:gs['g-q3']||'',q4:gs['g-q4']||'',q5:gs['g-q5']||''};
+  if((gs['g-q2']||gs['g-q3'])&&!S.tasks['j-am']){
+    S.tasks['j-am']=true;updateHabitFromTask('journal',true);
+    const box=document.getElementById('tbox-j-am');const lbl=document.getElementById('tlbl-j-am');
+    if(box){box.className='task-box done';box.textContent='✓';}if(lbl)lbl.className='task-label done';
+  }
+  // Save in-depth journal (morning gate free-write — stored as its own entry)
+  if(gs['g-indepth']){
+    S.journals['indepth-am']=gs['g-indepth'];
+    if(!S.tasks['jd-am']){
+      S.tasks['jd-am']=true;updateHabitFromTask('journal',true);
+    }
+  }
+  S.gateCompletedDate=td();
+  save();
+  const overlay=document.getElementById('gate-overlay');
+  overlay.style.transition='opacity .5s ease';overlay.style.opacity='0';
+  setTimeout(()=>{overlay.style.display='none';renderTasks();renderWellness();updateTasksSub();renderRings();renderJournal();},500);
+}
+
+function skipGate(){
+  const overlay=document.getElementById('gate-overlay');
+  overlay.style.transition='opacity .4s ease';overlay.style.opacity='0';
+  setTimeout(()=>{overlay.style.display='none';},400);
+}
+
+/* ══ ACCORDION ══ */
+function tog(btn){const open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open);btn.nextElementSibling.classList.toggle('open',!open);}
+
+/* ══ FULLSCREEN ══ */
+function openFullscreen(){const html=document.documentElement.outerHTML;const blob=new Blob([html],{type:'text/html'});window.open(URL.createObjectURL(blob),'_blank');}
+
+/* ══ TOAST ══ */
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2500);}
+
+/* ══ INIT ══ */
+setInterval(renderHeader,30000);
+renderHeader();
+renderTasks();
+updateTasksSub();
+renderWellness();
+renderGym();
+renderJournal();
+renderPerf();
+initStrava();
+initGate();
+save();
+</script>
+</body>
+</html>
